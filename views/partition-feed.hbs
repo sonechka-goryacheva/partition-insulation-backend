@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{pageTitle}} — Звукоизоляция перегородок</title>
+  <link rel="stylesheet" href="/partition-styles.css">
+</head>
+<body class="partitionBody">
+  <main class="partitionScreen">
+    <header class="partitionHeader partitionHeaderBlank"></header>
+
+    <section class="partitionFeed">
+      <video class="partitionFeedVideo" src="{{partition.partitionVideoUrl}}"
+             poster="{{partition.partitionPhotoUrl}}"
+             autoplay muted loop playsinline></video>
+
+      <div class="partitionActionColumn">
+        <span class="partitionDiamondBox"><span class="partitionDiamond partitionDiamondDark">
+          <span class="partitionDiamondInner">
+            <svg class="partitionHeartIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M12 20s-7-4.6-7-9.3A4.2 4.2 0 0 1 12 8a4.2 4.2 0 0 1 7 2.7c0 4.7-7 9.3-7 9.3z"></path>
+            </svg>
+            <span class="partitionLikesCount">{{partition.partitionLikesCount}}</span>
+          </span>
+        </span></span>
+
+        <span class="partitionDiamondBox"><span class="partitionDiamond partitionDiamondBlack">
+          <span class="partitionDiamondValue">
+            <span class="partitionDiamondCaption">Rw, дБ</span>
+            <span class="partitionDiamondNumber">{{partition.soundIndexRw}}</span>
+          </span>
+        </span></span>
+
+        <span class="partitionDiamondBox"><span class="partitionDiamond partitionDiamondBlack">
+          <span class="partitionDiamondValue">
+            <span class="partitionDiamondCaption">Тип</span>
+            <span class="partitionDiamondNumber">{{partition.partitionTypeShort}}</span>
+          </span>
+        </span></span>
+
+        <span class="partitionDiamondBox"><a class="partitionDiamond partitionDiamondAccent"
+           href="/partitions/feed/{{partition.partitionSystemId}}?next=true">
+          <span class="partitionDiamondInner">
+            <svg class="partitionNextIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <polyline points="4 8.5 12 16.5 20 8.5"></polyline>
+            </svg>
+          </span>
+        </a></span>
+      </div>
+
+      <div class="partitionFeedOverlay">
+        <h2 class="partitionFeedName">{{partition.partitionName}}</h2>
+        <input class="partitionDescriptionToggle" type="checkbox" id="partitionDescriptionToggle">
+        <p class="partitionDescriptionText">{{partition.partitionDescription}}</p>
+        <label class="partitionDescriptionMore" for="partitionDescriptionToggle"></label>
+      </div>
+    </section>
+
+    {{> partition-tabbar}}
+  </main>
+</body>
+</html>

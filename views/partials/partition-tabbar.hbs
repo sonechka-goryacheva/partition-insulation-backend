@@ -1,0 +1,25 @@
+<nav class="partitionTabbar">
+  <a class="partitionTabbarItem{{#if isFeedActive}} partitionTabbarItemActive{{/if}}" href="/partitions/feed">
+    <svg class="partitionTabbarIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+    </svg>
+    <span class="partitionTabbarLabel">Лента</span>
+  </a>
+  <a class="partitionTabbarItem{{#if isCreateActive}} partitionTabbarItemActive{{/if}}" href="/partitions/draft">
+    <svg class="partitionTabbarIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+      <line x1="12" y1="9" x2="12" y2="15"></line>
+      <line x1="9" y1="12" x2="15" y2="12"></line>
+    </svg>
+    <span class="partitionTabbarLabel">Добавить</span>
+  </a>
+  <a class="partitionTabbarItem{{#if isCatalogActive}} partitionTabbarItemActive{{/if}}" href="/partitions/catalog">
+    <svg class="partitionTabbarIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+      <line x1="12" y1="4" x2="12" y2="20"></line>
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+    </svg>
+    <span class="partitionTabbarLabel">Плитка</span>
+  </a>
+</nav>

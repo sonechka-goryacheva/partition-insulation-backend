@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{pageTitle}} — Звукоизоляция перегородок</title>
+  <link rel="stylesheet" href="/partition-styles.css">
+</head>
+<body class="partitionBody">
+  <main class="partitionScreen">
+    <header class="partitionHeader partitionHeaderRow">
+      <h1 class="partitionHeaderTitle">{{pageTitle}}</h1>
+      <span class="partitionDraftBadge">Черновик</span>
+    </header>
+
+    <section class="partitionCreate">
+      {{#if partition}}
+      <div class="partitionUploadRow">
+        <div class="partitionUploadCell">
+          <img class="partitionUploadMedia" src="{{partition.partitionPhotoUrl}}" alt="{{partition.partitionName}}">
+          <span class="partitionUploadCaption">Фото перегородки</span>
+        </div>
+        <div class="partitionUploadCell">
+          <video class="partitionUploadMedia" src="{{partition.partitionVideoUrl}}"
+                 poster="{{partition.partitionPhotoUrl}}" autoplay muted loop playsinline preload="auto"></video>
+          <span class="partitionUploadCaption">Видео перегородки</span>
+        </div>
+      </div>
+
+      <p class="partitionFieldLabel">Название конструкции</p>
+      <input class="partitionField" type="text" name="partitionName" value="{{partition.partitionName}}">
+
+      <p class="partitionFieldLabel">Описание</p>
+      <textarea class="partitionField partitionFieldArea" name="partitionDescription">{{partition.partitionDescription}}</textarea>
+
+      <p class="partitionSectionTitle">Технические параметры</p>
+
+      <div class="partitionParamRow">
+        <div class="partitionParamCell">
+          <p class="partitionFieldLabel">Тип перегородки</p>
+          <input class="partitionField" type="text" name="partitionType" value="{{partition.partitionTypeTitle}}">
+        </div>
+        <div class="partitionParamCell">
+          <p class="partitionFieldLabel">Индекс Rw, дБ</p>
+          <input class="partitionField" type="number" name="soundIndexRw" value="{{partition.soundIndexRw}}">
+        </div>
+      </div>
+
+      <span class="partitionPrimaryButton">Опубликовать</span>
+      {{else}}
+      <p class="partitionEmptyMessage">Черновая конструкция в коллекции не найдена.</p>
+      {{/if}}
+    </section>
+
+    {{> partition-tabbar}}
+  </main>
+</body>
+</html>

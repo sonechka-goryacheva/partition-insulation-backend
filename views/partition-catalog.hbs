@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{pageTitle}} — Звукоизоляция перегородок</title>
+  <link rel="stylesheet" href="/partition-styles.css">
+</head>
+<body class="partitionBody">
+  <main class="partitionScreen">
+    <header class="partitionHeader">
+      <h1 class="partitionHeaderTitle">{{pageTitle}}</h1>
+
+      <form class="partitionFilterForm" method="get" action="/partitions/catalog">
+        <div class="partitionFilterRow">
+          <span class="partitionFilterLabel">Индекс Rw не ниже</span>
+          <span class="partitionFilterLabel">{{rwFrom}} дБ</span>
+        </div>
+        <input class="partitionSlider" type="range" name="rwFrom"
+               min="{{rwMin}}" max="{{rwMax}}" step="1" value="{{rwFrom}}">
+
+        <div class="partitionFilterRow partitionFilterRowSecond">
+          <span class="partitionFilterLabel">Индекс Rw не выше</span>
+          <span class="partitionFilterLabel">{{rwTo}} дБ</span>
+        </div>
+        <input class="partitionSlider" type="range" name="rwTo"
+               min="{{rwMin}}" max="{{rwMax}}" step="1" value="{{rwTo}}">
+
+        <div class="partitionFilterRow partitionFilterBounds">
+          <span>{{rwMin}}</span>
+          <span>{{rwMax}}</span>
+        </div>
+
+        <button class="partitionPrimaryButton" type="submit">Поиск</button>
+      </form>
+    </header>
+
+    <section class="partitionCatalog">
+      <div class="partitionGrid">
+        {{#each partitions}}
+        <a class="partitionCard" href="/partitions/feed/{{this.partitionSystemId}}">
+          <span class="partitionCardImageBox">
+            <img class="partitionCardImage" src="{{this.partitionPhotoUrl}}" alt="{{this.partitionName}}">
+          </span>
+          <span class="partitionCardMarker"></span>
+          <span class="partitionCardBody">
+            <span class="partitionCardName">{{this.partitionName}}</span>
+            <span class="partitionCardSpecs">{{this.partitionTypeTitle}} · Rw {{this.soundIndexRw}} дБ</span>
+            <span class="partitionCardLikes">
+              <svg class="partitionCardHeart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path d="M12 20s-7-4.6-7-9.3A4.2 4.2 0 0 1 12 8a4.2 4.2 0 0 1 7 2.7c0 4.7-7 9.3-7 9.3z"></path>
+              </svg>
+              {{this.partitionLikesCount}}
+            </span>
+          </span>
+        </a>
+        {{else}}
+        <p class="partitionEmptyMessage">Конструкций с таким индексом Rw не найдено.</p>
+        {{/each}}
+      </div>
+    </section>
+
+    {{> partition-tabbar}}
+  </main>
+</body>
+</html>

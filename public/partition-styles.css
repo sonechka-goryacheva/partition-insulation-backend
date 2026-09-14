@@ -1,0 +1,555 @@
+/* Стилистика скопирована с сайта-образца ТехноСонус:
+   акцентный цвет #EE4623, тёмные подложки #141416 и #1B1B1C,
+   прямые углы без скруглений, отсутствие теней, переходы 0.3s,
+   шрифт Gotham Pro заменён свободным аналогом Montserrat. */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+:root {
+  --partitionAccent: #EE4623;
+  --partitionBackground: #FFFFFF;
+  --partitionDark: #141416;
+  --partitionDarkAlt: #1B1B1C;
+  --partitionBorder: #2A2A2C;
+  --partitionFieldBorder: #C9C9CC;
+  --partitionCardBorder: #E5E5E7;
+  --partitionTextMuted: rgba(0, 0, 0, 0.6);
+  --partitionTextOnDark: rgba(255, 255, 255, 0.5);
+  --partitionRadius: 0;
+  --partitionTransition: 0.3s;
+  --partitionScreenWidth: 390px;
+  --partitionTabbarHeight: 72px;
+  --partitionHeaderHeight: 56px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.partitionBody {
+  margin: 0;
+  background: #F5F5F7;
+  font-family: 'Montserrat', sans-serif;
+  color: var(--partitionDark);
+}
+
+.partitionScreen {
+  position: relative;
+  width: 100%;
+  max-width: var(--partitionScreenWidth);
+  min-height: 100vh;
+  margin: 0 auto;
+  background: var(--partitionBackground);
+  padding-bottom: var(--partitionTabbarHeight);
+}
+
+/* Шапка */
+
+.partitionHeader {
+  background: var(--partitionDarkAlt);
+  padding: 16px 20px;
+}
+
+.partitionHeaderBlank {
+  height: var(--partitionHeaderHeight);
+  padding: 0;
+}
+
+.partitionHeaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.partitionHeaderTitle {
+  margin: 0;
+  font-size: 20px;
+  line-height: 24px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.partitionDraftBadge {
+  background: var(--partitionDark);
+  color: var(--partitionTextOnDark);
+  font-size: 11px;
+  padding: 5px 9px;
+}
+
+/* Панель вкладок */
+
+.partitionTabbar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: var(--partitionScreenWidth);
+  height: var(--partitionTabbarHeight);
+  display: flex;
+  background: var(--partitionDarkAlt);
+  border-top: 0.5px solid var(--partitionBorder);
+}
+
+.partitionTabbarItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-decoration: none;
+  color: var(--partitionTextOnDark);
+  transition: color var(--partitionTransition);
+}
+
+.partitionTabbarItem:hover,
+.partitionTabbarItemActive {
+  color: var(--partitionAccent);
+}
+
+.partitionTabbarIcon {
+  width: 24px;
+  height: 24px;
+}
+
+.partitionTabbarLabel {
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+}
+
+/* Страница ленты */
+
+.partitionFeed {
+  position: relative;
+  height: calc(100vh - var(--partitionHeaderHeight) - var(--partitionTabbarHeight));
+  overflow: hidden;
+}
+
+.partitionFeedVideo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #EDEDEF;
+}
+
+.partitionFeedOverlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px 20px 20px;
+  background: var(--partitionDark);
+  opacity: 0.92;
+}
+
+.partitionFeedName {
+  margin: 0 0 8px;
+  font-size: 22px;
+  line-height: 26px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+/* Описание с разворачиванием, реализовано без JavaScript */
+
+.partitionDescriptionToggle {
+  display: none;
+}
+
+.partitionDescriptionText {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--partitionTextOnDark);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.partitionDescriptionToggle:checked ~ .partitionDescriptionText {
+  -webkit-line-clamp: initial;
+  overflow: visible;
+}
+
+.partitionDescriptionToggle:checked ~ .partitionDescriptionText,
+.partitionFeedOverlay {
+  max-height: 250px;
+}
+
+.partitionDescriptionMore {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  color: var(--partitionAccent);
+  cursor: pointer;
+}
+
+.partitionDescriptionMore::after {
+  content: 'Ещё';
+}
+
+.partitionDescriptionToggle:checked ~ .partitionDescriptionMore::after {
+  content: 'Свернуть';
+}
+
+/* Колонка ромбов справа */
+
+.partitionActionColumn {
+  position: absolute;
+  right: 10px;
+  bottom: 252px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 2;
+}
+
+/* Повёрнутый на 45 градусов квадрат занимает по диагонали больше своей стороны,
+   поэтому каждый ромб лежит в обёртке, которая и задаёт габариты в потоке */
+.partitionDiamondBox {
+  width: 78px;
+  height: 78px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.partitionDiamond {
+  width: 55px;
+  height: 55px;
+  transform: rotate(45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  transition: transform var(--partitionTransition);
+}
+
+.partitionDiamondDark {
+  background: var(--partitionDarkAlt);
+}
+
+.partitionDiamondBlack {
+  background: var(--partitionDark);
+}
+
+.partitionDiamondAccent {
+  background: var(--partitionAccent);
+}
+
+.partitionDiamondAccent:active {
+  transform: rotate(45deg) translate(3px, 3px);
+}
+
+.partitionDiamondInner {
+  transform: rotate(-45deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.partitionHeartIcon {
+  width: 21px;
+  height: 21px;
+  color: var(--partitionAccent);
+}
+
+.partitionNextIcon {
+  width: 24px;
+  height: 24px;
+  color: #FFFFFF;
+}
+
+.partitionLikesCount {
+  font-size: 11px;
+  line-height: 13px;
+  font-weight: 600;
+  color: #FFFFFF;
+  white-space: nowrap;
+}
+
+.partitionDiamondValue {
+  transform: rotate(-45deg);
+  text-align: center;
+}
+
+.partitionDiamondCaption {
+  display: block;
+  font-size: 8px;
+  line-height: 10px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.partitionDiamondNumber {
+  display: block;
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+/* Страница добавления */
+
+.partitionCreate {
+  padding: 14px 20px 20px;
+}
+
+.partitionFieldLabel {
+  margin: 0 0 5px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--partitionTextMuted);
+}
+
+.partitionUploadRow {
+  display: flex;
+  gap: 12px;
+  margin: 0 0 16px;
+}
+
+.partitionUploadCell {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.partitionUploadMedia {
+  display: block;
+  width: 100%;
+  height: 104px;
+  object-fit: cover;
+  background: #EDEDEF;
+  border: 0.5px solid var(--partitionFieldBorder);
+}
+
+.partitionUploadCaption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 4px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: #FFFFFF;
+  background: rgba(20, 20, 22, 0.55);
+}
+
+.partitionSectionTitle {
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 700;
+  color: var(--partitionDark);
+}
+
+.partitionParamRow {
+  display: flex;
+  gap: 12px;
+}
+
+.partitionParamCell {
+  flex: 1;
+  min-width: 0;
+}
+
+.partitionField {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  margin: 0 0 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  line-height: 18px;
+  color: var(--partitionDark);
+  background: var(--partitionBackground);
+  border: 0.5px solid var(--partitionFieldBorder);
+  border-radius: var(--partitionRadius);
+  transition: border-color var(--partitionTransition);
+}
+
+.partitionField:focus {
+  outline: none;
+  border-color: var(--partitionAccent);
+}
+
+.partitionFieldArea {
+  height: 82px;
+  line-height: 19px;
+  resize: none;
+}
+
+.partitionPrimaryButton {
+  display: block;
+  width: 100%;
+  padding: 13px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 15px;
+  line-height: 18px;
+  font-weight: 600;
+  text-align: center;
+  color: #FFFFFF;
+  background: var(--partitionAccent);
+  border: none;
+  border-radius: var(--partitionRadius);
+  cursor: pointer;
+  transition: opacity var(--partitionTransition);
+}
+
+.partitionPrimaryButton:hover {
+  opacity: 0.85;
+}
+
+/* Фильтр-слайдер на странице плитки */
+
+.partitionFilterForm {
+  margin-top: 16px;
+}
+
+.partitionFilterRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.partitionFilterLabel {
+  font-size: 11px;
+  color: var(--partitionTextOnDark);
+}
+
+.partitionFilterValue {
+  font-size: 16px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+.partitionFilterRowSecond {
+  margin-top: 14px;
+}
+
+.partitionFilterBounds {
+  margin: 10px 0 14px;
+  font-size: 11px;
+  color: var(--partitionTextOnDark);
+}
+
+.partitionSlider {
+  display: block;
+  width: 100%;
+  margin: 8px 0 0;
+  /* Нативная заливка пройденной части дорожки, следует за ползунком без JavaScript */
+  accent-color: var(--partitionAccent);
+  color-scheme: dark;
+  height: 18px;
+  cursor: pointer;
+}
+
+/* Плитка карточек */
+
+.partitionCatalog {
+  padding: 20px;
+}
+
+.partitionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.partitionCard {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  text-decoration: none;
+  background: var(--partitionBackground);
+  border: 0.5px solid var(--partitionCardBorder);
+  border-radius: var(--partitionRadius);
+}
+
+.partitionCardImageBox {
+  display: block;
+  height: 96px;
+  overflow: hidden;
+}
+
+.partitionCardImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--partitionTransition);
+}
+
+.partitionCard:hover .partitionCardImage {
+  transform: scale(1.05);
+}
+
+.partitionCardMarker {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 10px;
+  height: 10px;
+  background: var(--partitionAccent);
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity var(--partitionTransition);
+}
+
+.partitionCard:hover .partitionCardMarker {
+  opacity: 1;
+}
+
+.partitionCardBody {
+  display: block;
+  padding: 10px;
+}
+
+.partitionCardName {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  line-height: 16px;
+  font-weight: 600;
+  color: var(--partitionDark);
+}
+
+.partitionCardSpecs {
+  display: block;
+  min-height: 28px;
+  margin-bottom: 6px;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--partitionTextMuted);
+}
+
+.partitionCardLikes {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--partitionDark);
+}
+
+.partitionCardHeart {
+  width: 14px;
+  height: 14px;
+  color: var(--partitionAccent);
+}
+
+.partitionEmptyMessage {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 14px;
+  color: var(--partitionTextMuted);
+}
