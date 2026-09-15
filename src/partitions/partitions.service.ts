@@ -155,7 +155,7 @@ export class PartitionsService {
     try {
       const saved = await this.partitionSystemRepository.save(draft);
       return this.toView(saved);
-    } catch (error) {
+    } catch (error: any) {
       if (error?.code === POSTGRES_UNIQUE_VIOLATION) {
         throw new ConflictException('У пользователя уже есть черновик');
       }

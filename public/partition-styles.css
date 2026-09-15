@@ -553,3 +553,52 @@
   font-size: 14px;
   color: var(--partitionTextMuted);
 }
+
+/* Выбор типа перегородки — три чипа вместо системного select */
+
+.partitionTypeChoice {
+  display: flex;
+  gap: 6px;
+  margin: 0 0 12px;
+}
+
+.partitionTypeOption {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.partitionTypeOption input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+
+.partitionTypeOption span {
+  display: block;
+  padding: 10px 4px;
+  text-align: center;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  line-height: 18px;
+  font-weight: 600;
+  color: var(--partitionDark);
+  background: var(--partitionBackground);
+  border: 0.5px solid var(--partitionFieldBorder);
+  border-radius: var(--partitionRadius);
+  transition: background var(--partitionTransition), color var(--partitionTransition), border-color var(--partitionTransition);
+}
+
+.partitionTypeOption input:checked ~ span {
+  background: var(--partitionAccent);
+  border-color: var(--partitionAccent);
+  color: #FFFFFF;
+}
+
+.partitionTypeOption input:focus-visible ~ span {
+  outline: 2px solid var(--partitionAccent);
+  outline-offset: 1px;
+}

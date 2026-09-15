@@ -39,11 +39,20 @@
         <div class="partitionParamRow">
           <div class="partitionParamCell">
             <p class="partitionFieldLabel">Тип перегородки</p>
-            <select class="partitionField" name="partitionType">
-              <option value="gypsum" {{#if partition.isGypsum}}selected{{/if}}>Гипсокартонная</option>
-              <option value="aeratedConcrete" {{#if partition.isAeratedConcrete}}selected{{/if}}>Газобетонная</option>
-              <option value="brick" {{#if partition.isBrick}}selected{{/if}}>Кирпичная</option>
-            </select>
+            <div class="partitionTypeChoice">
+              <label class="partitionTypeOption">
+                <input type="radio" name="partitionType" value="gypsum" {{#if partition.isGypsum}}checked{{/if}}>
+                <span>ГКЛ</span>
+              </label>
+              <label class="partitionTypeOption">
+                <input type="radio" name="partitionType" value="aeratedConcrete" {{#if partition.isAeratedConcrete}}checked{{/if}}>
+                <span>ГБ</span>
+              </label>
+              <label class="partitionTypeOption">
+                <input type="radio" name="partitionType" value="brick" {{#if partition.isBrick}}checked{{/if}}>
+                <span>Кирпич</span>
+              </label>
+            </div>
           </div>
           <div class="partitionParamCell">
             <p class="partitionFieldLabel">Индекс Rw, дБ</p>
