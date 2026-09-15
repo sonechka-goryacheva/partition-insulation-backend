@@ -15,40 +15,51 @@
 
     <section class="partitionCreate">
       {{#if partition}}
-      <div class="partitionUploadRow">
-        <div class="partitionUploadCell">
-          <img class="partitionUploadMedia" src="{{partition.partitionPhotoUrl}}" alt="{{partition.partitionName}}">
-          <span class="partitionUploadCaption">Фото перегородки</span>
+      <form method="post" action="/partitions/publish">
+        <div class="partitionUploadRow">
+          <div class="partitionUploadCell">
+            <img class="partitionUploadMedia" src="{{partition.partitionPhotoUrl}}" alt="{{partition.partitionName}}">
+            <span class="partitionUploadCaption">Фото перегородки</span>
+          </div>
+          <div class="partitionUploadCell">
+            <video class="partitionUploadMedia" src="{{partition.partitionVideoUrl}}"
+                   poster="{{partition.partitionPhotoUrl}}" autoplay muted loop playsinline preload="auto"></video>
+            <span class="partitionUploadCaption">Видео перегородки</span>
+          </div>
         </div>
-        <div class="partitionUploadCell">
-          <video class="partitionUploadMedia" src="{{partition.partitionVideoUrl}}"
-                 poster="{{partition.partitionPhotoUrl}}" autoplay muted loop playsinline preload="auto"></video>
-          <span class="partitionUploadCaption">Видео перегородки</span>
+
+        <p class="partitionFieldLabel">Название конструкции</p>
+        <input class="partitionField" type="text" value="{{partition.partitionName}}" disabled>
+
+        <p class="partitionFieldLabel">Описание</p>
+        <textarea class="partitionField partitionFieldArea" name="partitionDescription">{{partition.partitionDescription}}</textarea>
+
+        <p class="partitionSectionTitle">Технические параметры</p>
+
+        <div class="partitionParamRow">
+          <div class="partitionParamCell">
+            <p class="partitionFieldLabel">Тип перегородки</p>
+            <select class="partitionField" name="partitionType">
+              <option value="gypsum" {{#if partition.isGypsum}}selected{{/if}}>Гипсокартонная</option>
+              <option value="aeratedConcrete" {{#if partition.isAeratedConcrete}}selected{{/if}}>Газобетонная</option>
+              <option value="brick" {{#if partition.isBrick}}selected{{/if}}>Кирпичная</option>
+            </select>
+          </div>
+          <div class="partitionParamCell">
+            <p class="partitionFieldLabel">Индекс Rw, дБ</p>
+            <input class="partitionField" type="number" name="soundIndexRw" value="{{partition.soundIndexRw}}">
+          </div>
         </div>
-      </div>
 
-      <p class="partitionFieldLabel">Название конструкции</p>
-      <input class="partitionField" type="text" name="partitionName" value="{{partition.partitionName}}">
-
-      <p class="partitionFieldLabel">Описание</p>
-      <textarea class="partitionField partitionFieldArea" name="partitionDescription">{{partition.partitionDescription}}</textarea>
-
-      <p class="partitionSectionTitle">Технические параметры</p>
-
-      <div class="partitionParamRow">
-        <div class="partitionParamCell">
-          <p class="partitionFieldLabel">Тип перегородки</p>
-          <input class="partitionField" type="text" name="partitionType" value="{{partition.partitionTypeTitle}}">
-        </div>
-        <div class="partitionParamCell">
-          <p class="partitionFieldLabel">Индекс Rw, дБ</p>
-          <input class="partitionField" type="number" name="soundIndexRw" value="{{partition.soundIndexRw}}">
-        </div>
-      </div>
-
-      <span class="partitionPrimaryButton">Опубликовать</span>
+        <button class="partitionPrimaryButton" type="submit">Опубликовать</button>
+      </form>
       {{else}}
-      <p class="partitionEmptyMessage">Черновая конструкция в коллекции не найдена.</p>
+      <form method="post" action="/partitions/draft">
+        <p class="partitionFieldLabel">Название конструкции</p>
+        <input class="partitionField" type="text" name="partitionName" required>
+
+        <button class="partitionPrimaryButton" type="submit">Далее</button>
+      </form>
       {{/if}}
     </section>
 

@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, Render } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, Redirect, Render } from '@nestjs/common';
 import { PartitionsService, PartitionSystemView } from './partitions.service';
 import { PARTITION_TYPE_SHORT, PARTITION_TYPE_TITLES } from './partition-system.model';
 
@@ -80,8 +80,35 @@ export class PartitionsController {
           this.partitionsService.buildPartitionPhotoUrl(draftPartition),
         partitionVideoUrl:
           this.partitionsService.buildPartitionVideoUrl(draftPartition),
+        isGypsum: draftPartition.partitionType === 'gypsum',
+        isAeratedConcrete: draftPartition.partitionType === 'aeratedConcrete',
+        isBrick: draftPartition.partitionType === 'brick',
       },
     };
+  }
+
+  // POST /partitions/draft — создание черновика текущего пользователя (кнопка «Далее»)
+  @Post('draft')
+  @Redirect('/partitions/draft')
+  async createPartitionDraft(@Body('partitionName') partitionName: string) {
+    await this.partitionsService.createDraftPartition(partitionName);
+    return {};
+  }
+
+  // POST /partitions/publish — публикация черновика (кнопка «Опубликовать»)
+  @Post('publish')
+  @Redirect('/partitions/draft')
+  async publishPartitionDraft(
+    @Body('partitionDescription') partitionDescription: string,
+    @Body('partitionType') partitionType: string,
+    @Body('soundIndexRw') soundIndexRw: string,
+  ) {
+    await this.partitionsService.publishDraftPartition({
+      partitionDescription,
+      partitionType,
+      soundIndexRw: Number(soundIndexRw),
+    });
+    return {};
   }
 
   // GET /partitions/catalog?rwFrom=52&rwTo=74 — плитка карточек с фильтрацией по диапазону Rw
@@ -93,7 +120,6 @@ export class PartitionsController {
   ) {
     const { rwMin, rwMax } = await this.partitionsService.getRwBounds();
 
-    // Пустые параметры означают «показать все конструкции»
     const parseBound = (raw: string | undefined, fallback: number): number => {
       if (raw === undefined || raw === '') return fallback;
       const parsed = Number(raw);
