@@ -1,10 +1,6 @@
 import { Controller, Get, Param, Query, Render } from '@nestjs/common';
-import { PartitionsService } from './partitions.service';
-import {
-  PartitionSystem,
-  PARTITION_TYPE_SHORT,
-  PARTITION_TYPE_TITLES,
-} from './partition-system.model';
+import { PartitionsService, PartitionSystemView } from './partitions.service';
+import { PARTITION_TYPE_SHORT, PARTITION_TYPE_TITLES } from './partition-system.model';
 
 @Controller('partitions')
 export class PartitionsController {
@@ -14,23 +10,23 @@ export class PartitionsController {
   // Без идентификатора открывается первая опубликованная конструкция (переход из панели вкладок)
   @Get(['feed', 'feed/:partitionSystemId'])
   @Render('partition-feed')
-  getPartitionFeed(
+  async getPartitionFeed(
     @Param('partitionSystemId') partitionSystemId?: string,
     @Query('next') next?: string,
   ) {
     const publishedPartitions =
-      this.partitionsService.findPublishedPartitions();
+      await this.partitionsService.findPublishedPartitions();
 
-    let currentPartition: PartitionSystem | undefined;
+    let currentPartition: PartitionSystemView | undefined;
 
     if (!partitionSystemId) {
       currentPartition = publishedPartitions[0];
     } else if (next === 'true') {
-      currentPartition = this.partitionsService.findNextPublishedPartition(
+      currentPartition = await this.partitionsService.findNextPublishedPartition(
         Number(partitionSystemId),
       );
     } else {
-      currentPartition = this.partitionsService.findPublishedPartitionById(
+      currentPartition = await this.partitionsService.findPublishedPartitionById(
         Number(partitionSystemId),
       );
     }
@@ -61,8 +57,8 @@ export class PartitionsController {
   // GET /partitions/draft — черновая конструкция на странице добавления
   @Get('draft')
   @Render('partition-create')
-  getPartitionDraft() {
-    const draftPartition = this.partitionsService.findDraftPartition();
+  async getPartitionDraft() {
+    const draftPartition = await this.partitionsService.findDraftPartition();
 
     if (!draftPartition) {
       return {
@@ -91,8 +87,11 @@ export class PartitionsController {
   // GET /partitions/catalog?rwFrom=52&rwTo=74 — плитка карточек с фильтрацией по диапазону Rw
   @Get('catalog')
   @Render('partition-catalog')
-  getPartitionCatalog(@Query('rwFrom') rwFrom?: string, @Query('rwTo') rwTo?: string) {
-    const { rwMin, rwMax } = this.partitionsService.getRwBounds();
+  async getPartitionCatalog(
+    @Query('rwFrom') rwFrom?: string,
+    @Query('rwTo') rwTo?: string,
+  ) {
+    const { rwMin, rwMax } = await this.partitionsService.getRwBounds();
 
     // Пустые параметры означают «показать все конструкции»
     const parseBound = (raw: string | undefined, fallback: number): number => {
@@ -105,7 +104,7 @@ export class PartitionsController {
     const appliedRwTo = parseBound(rwTo, rwMax);
 
     const filteredPartitions =
-      this.partitionsService.findPublishedPartitionsByRwRange(
+      await this.partitionsService.findPublishedPartitionsByRwRange(
         appliedRwFrom,
         appliedRwTo,
       );

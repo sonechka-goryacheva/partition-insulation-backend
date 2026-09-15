@@ -1,128 +1,112 @@
 import { Injectable } from '@nestjs/common';
-import { PartitionSystem } from './partition-system.model';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Between, Repository } from 'typeorm';
+import { PartitionSystemEntity } from './entities/partition-system.entity';
+import { PartitionLikeEntity } from './entities/partition-like.entity';
+import { PartitionType, PartitionStatus } from './partition-system.model';
+import { CURRENT_USER_ID } from '../common/current-user';
 
-// Базовый адрес объектного хранилища MinIO
-const MINIO_BUCKET_URL = 'http://localhost:9000/partitions';
+// Пока реальные медиа не загружаются — дефолтные файлы лежат в public/
+const DEFAULT_PARTITION_PHOTO_URL = '/default-partition.png';
+const DEFAULT_PARTITION_VIDEO_URL = '/default-partition.mp4';
 
-// Вспомогательная функция: список ID пользователей, поставивших лайк
-function partitionLikeAuthors(total: number): number[] {
-  return Array.from({ length: total }, (_, index) => index + 1);
+// Данные конструкции в форме, которую ожидают контроллер и шаблоны —
+// URL и количество лайков уже вычислены, дальше это просто чтение полей
+export interface PartitionSystemView {
+  partitionSystemId: number;
+  partitionName: string;
+  partitionDescription: string;
+  soundIndexRw: number;
+  partitionType: PartitionType;
+  partitionStatus: PartitionStatus;
+  partitionPhotoUrl: string | null;
+  partitionVideoUrl: string | null;
+  partitionLikesCount: number;
 }
 
 @Injectable()
 export class PartitionsService {
-  // Единственная модель-коллекция приложения, без базы данных
-  private readonly partitionSystems: PartitionSystem[] = [
-    {
-      partitionSystemId: 1,
-      partitionName: 'Базовая 1',
-      partitionType: 'gypsum',
-      soundIndexRw: 52,
-      partitionDescription:
-        'Каркасная перегородка на одинарном металлическом каркасе с заполнением звукопоглощающим материалом. Применяется для межкомнатных перегородок в жилых и офисных помещениях.',
-      partitionPhotoKey: 'bazovaya-1.png',
-      partitionVideoKey: 'bazovaya-1.mp4',
-      partitionStatus: 'published',
-      partitionLikes: partitionLikeAuthors(142),
-    },
-    {
-      partitionSystemId: 2,
-      partitionName: 'Стандарт М1',
-      partitionType: 'gypsum',
-      soundIndexRw: 60,
-      partitionDescription:
-        'Каркасная перегородка с усиленной обшивкой из звукоизоляционных панелей. Обеспечивает повышенную защиту от воздушного шума между помещениями.',
-      partitionPhotoKey: 'standart-m1.png',
-      partitionVideoKey: 'standart-m1.mp4',
-      partitionStatus: 'published',
-      partitionLikes: partitionLikeAuthors(89),
-    },
-    {
-      partitionSystemId: 3,
-      partitionName: 'Газобетон D500',
-      partitionType: 'aeratedConcrete',
-      soundIndexRw: 53,
-      partitionDescription:
-        'Перегородка из газобетонных блоков плотностью D500 толщиной 200 мм с двусторонней штукатуркой. Сочетает звукоизоляцию и высокий предел огнестойкости.',
-      partitionPhotoKey: 'gazobeton-d500.png',
-      partitionVideoKey: 'gazobeton-d500.mp4',
-      partitionStatus: 'published',
-      partitionLikes: partitionLikeAuthors(75),
-    },
-    {
-      partitionSystemId: 4,
-      partitionName: 'Профи М1',
-      partitionType: 'gypsum',
-      soundIndexRw: 74,
-      partitionDescription:
-        'Перегородка на двойном разнесённом каркасе увеличенной толщины. Применяется в студиях звукозаписи и переговорных комнатах повышенной приватности.',
-      partitionPhotoKey: 'profi-m1.png',
-      partitionVideoKey: 'profi-m1.mp4',
-      partitionStatus: 'published',
-      partitionLikes: partitionLikeAuthors(204),
-    },
-    {
-      partitionSystemId: 5,
-      partitionName: 'Кирпич полнотелый, 120 мм',
-      partitionType: 'brick',
-      soundIndexRw: 42,
-      partitionDescription:
-        'Перегородка из полнотелого керамического кирпича с двусторонней штукатуркой. Черновая запись, на страницу ленты и плитки не выводится.',
-      partitionPhotoKey: 'kirpich-120.png',
-      partitionVideoKey: 'kirpich-120.mp4',
-      partitionStatus: 'draft',
-      partitionLikes: partitionLikeAuthors(0),
-    },
-    {
-      partitionSystemId: 6,
-      partitionName: 'Газобетон D500, 100 мм',
-      partitionType: 'aeratedConcrete',
-      soundIndexRw: 41,
-      partitionDescription:
-        'Перегородка из газобетонных блоков толщиной 100 мм. Запись удалена и в интерфейсе не отображается.',
-      partitionPhotoKey: 'gazobeton-100.png',
-      partitionVideoKey: 'gazobeton-100.mp4',
-      partitionStatus: 'removed',
-      partitionLikes: partitionLikeAuthors(18),
-    },
-  ];
+  constructor(
+    @InjectRepository(PartitionSystemEntity)
+    private readonly partitionSystemRepository: Repository<PartitionSystemEntity>,
+    @InjectRepository(PartitionLikeEntity)
+    private readonly partitionLikeRepository: Repository<PartitionLikeEntity>,
+  ) {}
+
+  // Превращает сущность БД в форму, ожидаемую контроллером и шаблонами
+  private async toView(
+    entity: PartitionSystemEntity,
+  ): Promise<PartitionSystemView> {
+    const partitionLikesCount = await this.partitionLikeRepository.count({
+      where: { partition_system_id: entity.partition_system_id },
+    });
+
+    return {
+      partitionSystemId: entity.partition_system_id,
+      partitionName: entity.partition_name,
+      partitionDescription: entity.partition_description,
+      soundIndexRw: entity.sound_index_rw,
+      partitionType: entity.partition_type as PartitionType,
+      partitionStatus: entity.partition_status as PartitionStatus,
+      partitionPhotoUrl: entity.partition_photo_url,
+      partitionVideoUrl: entity.partition_video_url,
+      partitionLikesCount,
+    };
+  }
 
   // Все опубликованные конструкции, упорядоченные по идентификатору
-  findPublishedPartitions(): PartitionSystem[] {
-    return this.partitionSystems
-      .filter((partition) => partition.partitionStatus === 'published')
-      .sort((left, right) => left.partitionSystemId - right.partitionSystemId);
+  async findPublishedPartitions(): Promise<PartitionSystemView[]> {
+    const entities = await this.partitionSystemRepository.find({
+      where: { partition_status: 'published' },
+      order: { partition_system_id: 'ASC' },
+    });
+    return Promise.all(entities.map((entity) => this.toView(entity)));
   }
 
   // Фильтрация на сервере по диапазону индекса Rw
-  findPublishedPartitionsByRwRange(rwFrom: number, rwTo: number): PartitionSystem[] {
-    return this.findPublishedPartitions().filter(
-      (partition) =>
-        partition.soundIndexRw >= rwFrom && partition.soundIndexRw <= rwTo,
-    );
+  async findPublishedPartitionsByRwRange(
+    rwFrom: number,
+    rwTo: number,
+  ): Promise<PartitionSystemView[]> {
+    const entities = await this.partitionSystemRepository.find({
+      where: {
+        partition_status: 'published',
+        sound_index_rw: Between(rwFrom, rwTo),
+      },
+      order: { partition_system_id: 'ASC' },
+    });
+    return Promise.all(entities.map((entity) => this.toView(entity)));
   }
 
-  // Конструкция в статусе «черновик» для страницы добавления
-  findDraftPartition(): PartitionSystem | undefined {
-    return this.partitionSystems.find(
-      (partition) => partition.partitionStatus === 'draft',
-    );
+  // Черновик текущего пользователя для страницы добавления
+  async findDraftPartition(): Promise<PartitionSystemView | undefined> {
+    const entity = await this.partitionSystemRepository.findOne({
+      where: {
+        partition_status: 'draft',
+        partition_creator_id: CURRENT_USER_ID,
+      },
+    });
+    return entity ? this.toView(entity) : undefined;
   }
 
   // Конструкция по идентификатору среди опубликованных
-  findPublishedPartitionById(
+  async findPublishedPartitionById(
     partitionSystemId: number,
-  ): PartitionSystem | undefined {
-    return this.findPublishedPartitions().find(
-      (partition) => partition.partitionSystemId === partitionSystemId,
-    );
+  ): Promise<PartitionSystemView | undefined> {
+    const entity = await this.partitionSystemRepository.findOne({
+      where: {
+        partition_system_id: partitionSystemId,
+        partition_status: 'published',
+      },
+    });
+    return entity ? this.toView(entity) : undefined;
   }
 
   // Следующая опубликованная конструкция после указанной, с переходом по кругу
-  findNextPublishedPartition(
+  async findNextPublishedPartition(
     partitionSystemId: number,
-  ): PartitionSystem | undefined {
-    const publishedPartitions = this.findPublishedPartitions();
+  ): Promise<PartitionSystemView | undefined> {
+    const publishedPartitions = await this.findPublishedPartitions();
     if (publishedPartitions.length === 0) {
       return undefined;
     }
@@ -136,25 +120,24 @@ export class PartitionsService {
     return publishedPartitions[nextIndex];
   }
 
-  // Количество лайков вычисляется по вложенной коллекции ID пользователей
-  countPartitionLikes(partition: PartitionSystem): number {
-    return partition.partitionLikes.length;
+  // Количество лайков уже вычислено при загрузке — просто читаем поле
+  countPartitionLikes(partition: PartitionSystemView): number {
+    return partition.partitionLikesCount;
   }
 
-  // Полные адреса медиафайлов в MinIO собираются из ключей модели
-  buildPartitionPhotoUrl(partition: PartitionSystem): string {
-    return `${MINIO_BUCKET_URL}/${partition.partitionPhotoKey}`;
+  // Пустой URL в БД — подставляем дефолтный файл из public/
+  buildPartitionPhotoUrl(partition: PartitionSystemView): string {
+    return partition.partitionPhotoUrl ?? DEFAULT_PARTITION_PHOTO_URL;
   }
 
-  buildPartitionVideoUrl(partition: PartitionSystem): string {
-    return `${MINIO_BUCKET_URL}/${partition.partitionVideoKey}`;
+  buildPartitionVideoUrl(partition: PartitionSystemView): string {
+    return partition.partitionVideoUrl ?? DEFAULT_PARTITION_VIDEO_URL;
   }
 
   // Границы слайдера фильтрации считаются по опубликованным конструкциям
-  getRwBounds(): { rwMin: number; rwMax: number } {
-    const values = this.findPublishedPartitions().map(
-      (partition) => partition.soundIndexRw,
-    );
+  async getRwBounds(): Promise<{ rwMin: number; rwMax: number }> {
+    const publishedPartitions = await this.findPublishedPartitions();
+    const values = publishedPartitions.map((partition) => partition.soundIndexRw);
     return {
       rwMin: Math.min(...values),
       rwMax: Math.max(...values),
