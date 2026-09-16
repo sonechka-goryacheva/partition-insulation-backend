@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query, Redirect, Render } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Post, Query, Redirect, Render } from '@nestjs/common';
 import { PartitionsService, PartitionSystemView } from './partitions.service';
 import { PARTITION_TYPE_SHORT, PARTITION_TYPE_TITLES } from './partition-system.model';
 
@@ -20,19 +20,25 @@ export class PartitionsController {
     let currentPartition: PartitionSystemView | undefined;
 
     if (!partitionSystemId) {
+      // Переход из панели вкладок, без ID — первая опубликованная конструкция
       currentPartition = publishedPartitions[0];
     } else if (next === 'true') {
+      // Переход «следующая» внутри самой ленты — циклический фоллбэк на первую
       currentPartition = await this.partitionsService.findNextPublishedPartition(
         Number(partitionSystemId),
       );
+      if (!currentPartition) {
+        currentPartition = publishedPartitions[0];
+      }
     } else {
+      // Прямой переход по URL конкретной услуги — удалённую или несуществующую
+      // просматривать нельзя, согласно требованиям лабораторной
       currentPartition = await this.partitionsService.findPublishedPartitionById(
         Number(partitionSystemId),
       );
-    }
-
-    if (!currentPartition) {
-      currentPartition = publishedPartitions[0];
+      if (!currentPartition) {
+        throw new NotFoundException('Услуга удалена или не найдена');
+      }
     }
 
     return {
