@@ -464,12 +464,15 @@
 .partitionGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
   gap: 12px;
 }
 
 .partitionCard {
   position: relative;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   overflow: hidden;
   text-decoration: none;
   background: var(--partitionBackground);
@@ -511,7 +514,9 @@
 }
 
 .partitionCardBody {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   padding: 10px;
 }
 
@@ -526,7 +531,7 @@
 
 .partitionCardSpecs {
   display: block;
-  min-height: 28px;
+  flex: 1;
   margin-bottom: 6px;
   font-size: 11px;
   line-height: 14px;
