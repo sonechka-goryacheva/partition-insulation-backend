@@ -7,7 +7,7 @@ import { PartitionType, PartitionStatus } from './partition-system.model';
 import { CURRENT_USER_ID } from '../common/current-user';
 
 // Пока реальные медиа не загружаются — дефолтные файлы лежат в public/
-const DEFAULT_PARTITION_PHOTO_URL = '/default-partition.png';
+const DEFAULT_PARTITION_PHOTO_URL = '/default-partition.svg';
 const DEFAULT_PARTITION_VIDEO_URL = '/default-partition.mp4';
 
 // Postgres: нарушение уникального ограничения
