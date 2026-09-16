@@ -111,6 +111,14 @@ export class PartitionsController {
     return {};
   }
 
+  // POST /partitions/:partitionSystemId/delete — логическое удаление (сырой SQL, без ORM)
+  @Post(':partitionSystemId/delete')
+  @Redirect('/partitions/catalog')
+  async deletePartition(@Param('partitionSystemId') partitionSystemId: string) {
+    await this.partitionsService.deletePartitionBySql(Number(partitionSystemId));
+    return {};
+  }
+
   // GET /partitions/catalog?rwFrom=52&rwTo=74 — плитка карточек с фильтрацией по диапазону Rw
   @Get('catalog')
   @Render('partition-catalog')

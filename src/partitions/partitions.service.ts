@@ -202,6 +202,14 @@ export class PartitionsService {
     return partition.partitionVideoUrl ?? DEFAULT_PARTITION_VIDEO_URL;
   }
 
+  // Логическое удаление — сырой SQL UPDATE, без использования ORM-методов записи
+  async deletePartitionBySql(partitionSystemId: number): Promise<void> {
+    await this.partitionSystemRepository.manager.query(
+      `UPDATE partition_system SET partition_status = 'removed' WHERE partition_system_id = $1`,
+      [partitionSystemId],
+    );
+  }
+
   // Границы слайдера фильтрации считаются по опубликованным конструкциям
   async getRwBounds(): Promise<{ rwMin: number; rwMax: number }> {
     const publishedPartitions = await this.findPublishedPartitions();

@@ -602,3 +602,38 @@
   outline: 2px solid var(--partitionAccent);
   outline-offset: 1px;
 }
+
+/* Кнопка логического удаления на карточке плитки */
+
+.partitionCardWrapper {
+  position: relative;
+}
+
+.partitionDeleteForm {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 3;
+  margin: 0;
+}
+
+.partitionDeleteButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1;
+  color: #FFFFFF;
+  background: rgba(20, 20, 22, 0.6);
+  border: none;
+  border-radius: var(--partitionRadius);
+  cursor: pointer;
+  transition: background var(--partitionTransition);
+}
+
+.partitionDeleteButton:hover {
+  background: var(--partitionAccent);
+}
