@@ -210,12 +210,12 @@ export class PartitionsService {
     );
   }
 
-  // Границы слайдера фильтрации считаются по опубликованным конструкциям
+  // Нижняя граница слайдера фиксирована на нуле, верхняя считается по данным
   async getRwBounds(): Promise<{ rwMin: number; rwMax: number }> {
     const publishedPartitions = await this.findPublishedPartitions();
     const values = publishedPartitions.map((partition) => partition.soundIndexRw);
     return {
-      rwMin: Math.min(...values),
+      rwMin: 0,
       rwMax: Math.max(...values),
     };
   }
