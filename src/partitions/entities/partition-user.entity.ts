@@ -12,6 +12,9 @@ export class PartitionUserEntity {
   @Column({ type: 'varchar', length: 100 })
   partition_user_name: string;
 
+  @Column({ type: 'varchar', length: 255 })
+  partition_user_password: string;
+
   @Column({ type: 'varchar', length: 30 })
   partition_user_role: string;
 }

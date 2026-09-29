@@ -7,8 +7,8 @@ import { PartitionType, PartitionStatus } from './partition-system.model';
 import { CURRENT_USER_ID } from '../common/current-user';
 
 // Пока реальные медиа не загружаются — дефолтные файлы лежат в public/
-const DEFAULT_PARTITION_PHOTO_URL = '/default-partition.svg';
-const DEFAULT_PARTITION_VIDEO_URL = '/default-partition.mp4';
+export const DEFAULT_PARTITION_PHOTO_URL = '/default-partition.svg';
+export const DEFAULT_PARTITION_VIDEO_URL = '/default-partition.mp4';
 
 // Postgres: нарушение уникального ограничения
 const POSTGRES_UNIQUE_VIOLATION = '23505';
@@ -18,9 +18,9 @@ const POSTGRES_UNIQUE_VIOLATION = '23505';
 export interface PartitionSystemView {
   partitionSystemId: number;
   partitionName: string;
-  partitionDescription: string;
-  soundIndexRw: number;
-  partitionType: PartitionType;
+  partitionDescription: string | null;
+  soundIndexRw: number | null;
+  partitionType: PartitionType | null;
   partitionStatus: PartitionStatus;
   partitionPhotoUrl: string | null;
   partitionVideoUrl: string | null;
@@ -55,7 +55,7 @@ export class PartitionsService {
       partitionName: entity.partition_name,
       partitionDescription: entity.partition_description,
       soundIndexRw: entity.sound_index_rw,
-      partitionType: entity.partition_type as PartitionType,
+      partitionType: entity.partition_type as PartitionType | null,
       partitionStatus: entity.partition_status as PartitionStatus,
       partitionPhotoUrl: entity.partition_photo_url,
       partitionVideoUrl: entity.partition_video_url,
@@ -139,14 +139,13 @@ export class PartitionsService {
       return existingDraft;
     }
 
+    // INSERT только того, что известно на шаге «Далее»;
+    // описание, тип и Rw остаются NULL до публикации
     const draft = this.partitionSystemRepository.create({
       partition_name: partitionName,
-      partition_description: '',
       partition_status: 'draft',
       partition_photo_url: null,
       partition_video_url: null,
-      partition_type: 'gypsum',
-      sound_index_rw: 0,
       partition_created_at: new Date(),
       partition_formed_at: null,
       partition_creator_id: CURRENT_USER_ID,
@@ -213,10 +212,10 @@ export class PartitionsService {
   // Нижняя граница слайдера фиксирована на нуле, верхняя считается по данным
   async getRwBounds(): Promise<{ rwMin: number; rwMax: number }> {
     const publishedPartitions = await this.findPublishedPartitions();
-    const values = publishedPartitions.map((partition) => partition.soundIndexRw);
+    const values = publishedPartitions.map((partition) => partition.soundIndexRw ?? 0);
     return {
       rwMin: 0,
-      rwMax: Math.max(...values),
+      rwMax: values.length ? Math.max(...values) : 0,
     };
   }
 }

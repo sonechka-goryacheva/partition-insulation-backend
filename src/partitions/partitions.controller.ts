@@ -1,5 +1,10 @@
 import { Body, Controller, Get, NotFoundException, Param, Post, Query, Redirect, Render } from '@nestjs/common';
-import { PartitionsService, PartitionSystemView } from './partitions.service';
+import {
+  DEFAULT_PARTITION_PHOTO_URL,
+  DEFAULT_PARTITION_VIDEO_URL,
+  PartitionsService,
+  PartitionSystemView,
+} from './partitions.service';
 import { PARTITION_TYPE_SHORT, PARTITION_TYPE_TITLES } from './partition-system.model';
 
 @Controller('partitions')
@@ -49,7 +54,9 @@ export class PartitionsController {
         partitionName: currentPartition.partitionName,
         partitionDescription: currentPartition.partitionDescription,
         soundIndexRw: currentPartition.soundIndexRw,
-        partitionTypeShort: PARTITION_TYPE_SHORT[currentPartition.partitionType],
+        partitionTypeShort: currentPartition.partitionType
+          ? PARTITION_TYPE_SHORT[currentPartition.partitionType]
+          : '',
         partitionLikesCount:
           this.partitionsService.countPartitionLikes(currentPartition),
         partitionPhotoUrl:
@@ -71,6 +78,9 @@ export class PartitionsController {
         pageTitle: 'Добавить конструкцию',
         isCreateActive: true,
         partition: null,
+        // Превью по умолчанию до выбора файлов (п. «Далее»)
+        defaultPhotoUrl: DEFAULT_PARTITION_PHOTO_URL,
+        defaultVideoUrl: DEFAULT_PARTITION_VIDEO_URL,
       };
     }
 
@@ -81,7 +91,6 @@ export class PartitionsController {
         partitionName: draftPartition.partitionName,
         partitionDescription: draftPartition.partitionDescription,
         soundIndexRw: draftPartition.soundIndexRw,
-        partitionTypeTitle: PARTITION_TYPE_TITLES[draftPartition.partitionType],
         partitionPhotoUrl:
           this.partitionsService.buildPartitionPhotoUrl(draftPartition),
         partitionVideoUrl:
@@ -160,7 +169,9 @@ export class PartitionsController {
         partitionSystemId: partition.partitionSystemId,
         partitionName: partition.partitionName,
         soundIndexRw: partition.soundIndexRw,
-        partitionTypeTitle: PARTITION_TYPE_TITLES[partition.partitionType],
+        partitionTypeTitle: partition.partitionType
+          ? PARTITION_TYPE_TITLES[partition.partitionType]
+          : '',
         partitionLikesCount:
           this.partitionsService.countPartitionLikes(partition),
         partitionPhotoUrl:
@@ -169,3 +180,5 @@ export class PartitionsController {
     };
   }
 }
+
+

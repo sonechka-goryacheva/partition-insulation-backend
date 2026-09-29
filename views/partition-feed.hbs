@@ -11,7 +11,7 @@
     <header class="partitionHeader partitionHeaderBlank"></header>
 
     <section class="partitionFeed">
-      <video class="partitionFeedVideo" src="{{partition.partitionVideoUrl}}"
+      <video class="partitionFeedVideo" src="{{partition.partitionVideoUrl}}" onerror="this.onerror=null;this.src='/default-partition.mp4'"
              poster="{{partition.partitionPhotoUrl}}"
              autoplay muted loop playsinline></video>
 

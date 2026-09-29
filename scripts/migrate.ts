@@ -22,8 +22,8 @@ async function run() {
   // bootstrap only, not the required Adminer fill-in —
   // техническая заглушка, чтобы FK partition_creator_id имел на что ссылаться
   await dataSource.query(`
-    INSERT INTO partition_user (partition_user_id, partition_user_login, partition_user_name, partition_user_role)
-    VALUES (1, 'engineer', 'Тестовый инженер', 'designEngineer')
+    INSERT INTO partition_user (partition_user_id, partition_user_login, partition_user_name, partition_user_password, partition_user_role)
+    VALUES (1, 'engineer', 'Тестовый инженер', 'engineer123', 'designEngineer')
     ON CONFLICT DO NOTHING;
   `);
   console.log('Тестовый пользователь id=1 готов.');

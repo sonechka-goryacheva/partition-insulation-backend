@@ -63,11 +63,11 @@
 
         <div class="partitionUploadStack">
           <div class="partitionUploadCell">
-            <img id="partitionDraftPhoto" class="partitionUploadMedia" src="{{partition.partitionPhotoUrl}}" alt="{{partition.partitionName}}">
+            <img id="partitionDraftPhoto" class="partitionUploadMedia" src="{{partition.partitionPhotoUrl}}" alt="{{partition.partitionName}}" onerror="this.onerror=null;this.src='/default-partition.svg'">
             <span class="partitionUploadCaption">Фото перегородки</span>
           </div>
           <div class="partitionUploadCell">
-            <video id="partitionDraftVideo" class="partitionUploadMedia" src="{{partition.partitionVideoUrl}}"
+            <video id="partitionDraftVideo" class="partitionUploadMedia" src="{{partition.partitionVideoUrl}}" onerror="this.onerror=null;this.src='/default-partition.mp4'"
                    poster="{{partition.partitionPhotoUrl}}" autoplay muted loop playsinline preload="auto"></video>
             <span class="partitionUploadCaption">Видео перегородки</span>
           </div>

@@ -22,8 +22,8 @@ export class PartitionSystemEntity {
   @Column({ type: 'varchar', length: 100 })
   partition_name: string;
 
-  @Column({ type: 'varchar', length: 500 })
-  partition_description: string;
+  @Column({ type: 'varchar', length: 500, nullable: true, default: null })
+  partition_description: string | null;
 
   @Column({ type: 'varchar', length: 20 })
   partition_status: string;
@@ -34,11 +34,11 @@ export class PartitionSystemEntity {
   @Column({ type: 'varchar', length: 255, nullable: true, default: null })
   partition_video_url: string | null;
 
-  @Column({ type: 'varchar', length: 30 })
-  partition_type: string;
+  @Column({ type: 'varchar', length: 30, nullable: true, default: null })
+  partition_type: string | null;
 
-  @Column({ type: 'integer' })
-  sound_index_rw: number;
+  @Column({ type: 'integer', nullable: true, default: null })
+  sound_index_rw: number | null;
 
   @Column({ type: 'timestamp' })
   partition_created_at: Date;
