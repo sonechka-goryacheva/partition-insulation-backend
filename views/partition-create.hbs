@@ -13,26 +13,68 @@
       <span class="partitionDraftBadge">Черновик</span>
     </header>
 
+    <script>
+      // Выбранные фото и видео хранятся только в браузере (IndexedDB),
+      // на сервер и в БД не передаются — по требованиям ЛР-2
+      const PARTITION_MEDIA_DB = 'partitionDraftMedia';
+      const PARTITION_MEDIA_STORE = 'files';
+
+      function openPartitionMediaDb() {
+        return new Promise((resolve, reject) => {
+          const request = indexedDB.open(PARTITION_MEDIA_DB, 1);
+          request.onupgradeneeded = () => request.result.createObjectStore(PARTITION_MEDIA_STORE);
+          request.onsuccess = () => resolve(request.result);
+          request.onerror = () => reject(request.error);
+        });
+      }
+
+      async function runPartitionMediaTx(mode, action) {
+        const db = await openPartitionMediaDb();
+        return new Promise((resolve, reject) => {
+          const tx = db.transaction(PARTITION_MEDIA_STORE, mode);
+          const request = action(tx.objectStore(PARTITION_MEDIA_STORE));
+          tx.oncomplete = () => { db.close(); resolve(request.result); };
+          tx.onerror = () => { db.close(); reject(tx.error); };
+        });
+      }
+
+      const savePartitionMedia = (key, file) =>
+        runPartitionMediaTx('readwrite', (store) => store.put(file, key));
+      const loadPartitionMedia = (key) =>
+        runPartitionMediaTx('readonly', (store) => store.get(key));
+      const clearPartitionMedia = () =>
+        runPartitionMediaTx('readwrite', (store) => store.clear());
+
+      // Показ файла из проводника/IndexedDB в превью
+      function showPartitionMedia(element, file) {
+        element.src = URL.createObjectURL(file);
+        if (element.tagName === 'VIDEO') {
+          element.removeAttribute('poster');
+          element.play();
+        }
+      }
+    </script>
+
     <section class="partitionCreate">
       {{#if partition}}
+      <!-- Черновик уже создан: фото и видео только показываются, вводятся поля для публикации -->
       <form method="post" action="/partitions/publish">
-        <div class="partitionUploadRow">
+        <p class="partitionDraftName">{{partition.partitionName}}</p>
+
+        <div class="partitionUploadStack">
           <div class="partitionUploadCell">
-            <img class="partitionUploadMedia" src="{{partition.partitionPhotoUrl}}" alt="{{partition.partitionName}}">
+            <img id="partitionDraftPhoto" class="partitionUploadMedia" src="{{partition.partitionPhotoUrl}}" alt="{{partition.partitionName}}">
             <span class="partitionUploadCaption">Фото перегородки</span>
           </div>
           <div class="partitionUploadCell">
-            <video class="partitionUploadMedia" src="{{partition.partitionVideoUrl}}"
+            <video id="partitionDraftVideo" class="partitionUploadMedia" src="{{partition.partitionVideoUrl}}"
                    poster="{{partition.partitionPhotoUrl}}" autoplay muted loop playsinline preload="auto"></video>
             <span class="partitionUploadCaption">Видео перегородки</span>
           </div>
         </div>
 
-        <p class="partitionFieldLabel">Название конструкции</p>
-        <input class="partitionField" type="text" value="{{partition.partitionName}}" disabled>
-
         <p class="partitionFieldLabel">Описание</p>
-        <textarea class="partitionField partitionFieldArea" name="partitionDescription">{{partition.partitionDescription}}</textarea>
+        <textarea class="partitionField partitionFieldArea" name="partitionDescription" required>{{partition.partitionDescription}}</textarea>
 
         <p class="partitionSectionTitle">Технические параметры</p>
 
@@ -41,7 +83,7 @@
             <p class="partitionFieldLabel">Тип перегородки</p>
             <div class="partitionTypeChoice">
               <label class="partitionTypeOption">
-                <input type="radio" name="partitionType" value="gypsum" {{#if partition.isGypsum}}checked{{/if}}>
+                <input type="radio" name="partitionType" value="gypsum" required {{#if partition.isGypsum}}checked{{/if}}>
                 <span>ГКЛ</span>
               </label>
               <label class="partitionTypeOption">
@@ -56,19 +98,89 @@
           </div>
           <div class="partitionParamCell">
             <p class="partitionFieldLabel">Индекс Rw, дБ</p>
-            <input class="partitionField" type="number" name="soundIndexRw" value="{{partition.soundIndexRw}}">
+            <input class="partitionField" type="number" name="soundIndexRw" value="{{partition.soundIndexRw}}" min="0" required>
           </div>
         </div>
 
         <button class="partitionPrimaryButton" type="submit">Опубликовать</button>
       </form>
+
+      <script>
+        // Подставляем фото и видео, выбранные до «Далее»; если их нет — остаются файлы по умолчанию
+        loadPartitionMedia('photo')
+          .then((file) => { if (file) showPartitionMedia(document.getElementById('partitionDraftPhoto'), file); })
+          .catch(() => {});
+        loadPartitionMedia('video')
+          .then((file) => { if (file) showPartitionMedia(document.getElementById('partitionDraftVideo'), file); })
+          .catch(() => {});
+      </script>
       {{else}}
-      <form method="post" action="/partitions/draft">
+      <!-- Черновика нет: выбор фото и видео через проводник, название, кнопка «Далее».
+           Файлы на сервер не отправляются (у input нет name), а сохраняются в браузере -->
+      <form id="partitionDraftForm" method="post" action="/partitions/draft">
+        <div class="partitionUploadStack">
+          <div class="partitionUploadBlock">
+            <div class="partitionUploadCell">
+              <img id="partitionPhotoPreview" class="partitionUploadMedia" src="{{defaultPhotoUrl}}" alt="Фото перегородки">
+              <span class="partitionUploadCaption">Фото перегородки</span>
+            </div>
+            <label class="partitionPickButton">
+              <span id="partitionPhotoPickText">Выбрать фото</span>
+              <input id="partitionPhotoInput" class="partitionPickInput" type="file" accept="image/*">
+            </label>
+          </div>
+
+          <div class="partitionUploadBlock">
+            <div class="partitionUploadCell">
+              <video id="partitionVideoPreview" class="partitionUploadMedia" src="{{defaultVideoUrl}}"
+                     poster="{{defaultPhotoUrl}}" autoplay muted loop playsinline preload="auto"></video>
+              <span class="partitionUploadCaption">Видео перегородки</span>
+            </div>
+            <label class="partitionPickButton">
+              <span id="partitionVideoPickText">Выбрать видео</span>
+              <input id="partitionVideoInput" class="partitionPickInput" type="file" accept="video/*">
+            </label>
+          </div>
+        </div>
+
         <p class="partitionFieldLabel">Название конструкции</p>
         <input class="partitionField" type="text" name="partitionName" required>
 
         <button class="partitionPrimaryButton" type="submit">Далее</button>
       </form>
+
+      <script>
+        // Новый черновик — файлы от предыдущего убираем
+        const partitionMediaCleared = clearPartitionMedia().catch(() => {});
+        const partitionPendingSaves = [];
+
+        function bindPartitionPicker(inputId, previewId, textId, storageKey) {
+          const input = document.getElementById(inputId);
+          const preview = document.getElementById(previewId);
+          const text = document.getElementById(textId);
+          input.addEventListener('change', () => {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            showPartitionMedia(preview, file);
+            text.textContent = file.name;
+            partitionPendingSaves.push(
+              partitionMediaCleared.then(() => savePartitionMedia(storageKey, file)).catch(() => {}),
+            );
+          });
+        }
+        bindPartitionPicker('partitionPhotoInput', 'partitionPhotoPreview', 'partitionPhotoPickText', 'photo');
+        bindPartitionPicker('partitionVideoInput', 'partitionVideoPreview', 'partitionVideoPickText', 'video');
+
+        // Перед отправкой «Далее» дожидаемся, пока файлы сохранятся в браузере
+        const partitionDraftForm = document.getElementById('partitionDraftForm');
+        let partitionDraftSubmitting = false;
+        partitionDraftForm.addEventListener('submit', (event) => {
+          if (partitionDraftSubmitting) return;
+          event.preventDefault();
+          partitionDraftSubmitting = true;
+          Promise.all(partitionPendingSaves).finally(() => partitionDraftForm.submit());
+        });
+      </script>
       {{/if}}
     </section>
 
