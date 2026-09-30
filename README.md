@@ -226,15 +226,18 @@ npm run start:dev      # http://localhost:3000/api
 Фото и видео хранятся в MinIO, бакет `partition-media` создаётся при запуске приложения. Бакет закрыт: файлы доступны только по временным подписанным ссылкам, которые сервис генерирует при каждом ответе.
 
 ## Структура проекта
+
+```
 src/
-main.ts префикс /api, ValidationPipe, ClassSerializerInterceptor, фильтр ошибок
-app.module.ts конфигурация, TypeORM, модули доменов
-common/
-current-user.ts функция-singleton текущего пользователя
-partition-http-exception.filter.ts ошибки без тела
-entities/ модели TypeORM
-modules/
-partition-systems/ домен конструкций: controllers, services, repositories, dto
-partition-users/ домен пользователей: controllers, services, repositories, dto
-scripts/migrate.ts схема для пустой БД и пользователь id=1
-postman/ коллекция запросов
+  main.ts                       префикс /api, ValidationPipe, ClassSerializerInterceptor, фильтр ошибок
+  app.module.ts                 конфигурация, TypeORM, модули доменов
+  common/
+    current-user.ts             функция-singleton текущего пользователя
+    partition-http-exception.filter.ts  ошибки без тела
+  entities/                     модели TypeORM
+  modules/
+    partition-systems/          домен конструкций: controllers, services, repositories, dto
+    partition-users/            домен пользователей: controllers, services, repositories, dto
+scripts/migrate.ts              схема для пустой БД и пользователь id=1
+postman/                        коллекция запросов
+```
