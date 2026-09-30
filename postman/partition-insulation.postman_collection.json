@@ -11,7 +11,7 @@
     },
     {
       "key": "partitionSystemId",
-      "value": "1"
+      "value": "0"
     }
   ],
   "item": [
@@ -71,12 +71,12 @@
             {
               "key": "partitionPhoto",
               "type": "file",
-              "src": "/tmp/partition-test.png"
+              "src": "/Users/sofagoraceva/Postman/files/partition-test.png"
             },
             {
               "key": "partitionVideo",
               "type": "file",
-              "src": "/tmp/partition-test.mp4"
+              "src": "/Users/sofagoraceva/Postman/files/partition-test.mp4"
             }
           ]
         },
@@ -219,7 +219,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"partitionUserLogin\": \"acoustic_petrova\",\n  \"partitionUserName\": \"Петрова Анна\",\n  \"partitionUserPassword\": \"secret123\"\n}",
+          "raw": "{\n  \"partitionUserLogin\": \"acoustic_smirnova\",\n  \"partitionUserName\": \"Смирнова Ольга\",\n  \"partitionUserPassword\": \"secret123\"\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -250,7 +250,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"partitionUserLogin\": \"acoustic_petrova\",\n  \"partitionUserPassword\": \"secret123\"\n}",
+          "raw": "{\n  \"partitionUserLogin\": \"acoustic_smirnova\",\n  \"partitionUserPassword\": \"secret123\"\n}",
           "options": {
             "raw": {
               "language": "json"
