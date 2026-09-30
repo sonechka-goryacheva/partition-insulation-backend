@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
-import { PartitionUserEntity } from '../src/partitions/entities/partition-user.entity';
-import { PartitionSystemEntity } from '../src/partitions/entities/partition-system.entity';
-import { PartitionLikeEntity } from '../src/partitions/entities/partition-like.entity';
+import { PartitionUserEntity } from '../src/entities/partition-user.entity';
+import { PartitionSystemEntity } from '../src/entities/partition-system.entity';
+import { PartitionLikeEntity } from '../src/entities/partition-like.entity';
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -25,6 +25,12 @@ async function run() {
     INSERT INTO partition_user (partition_user_id, partition_user_login, partition_user_name, partition_user_password, partition_user_role)
     VALUES (1, 'engineer', 'Тестовый инженер', 'engineer123', 'designEngineer')
     ON CONFLICT DO NOTHING;
+  `);
+  // id=1 вставлен явно, поэтому счётчик автонумерации сдвигаем вручную,
+  // иначе следующая регистрация получит тот же id и упадёт на дубле ключа
+  await dataSource.query(`
+    SELECT setval(pg_get_serial_sequence('partition_user', 'partition_user_id'),
+                  (SELECT MAX(partition_user_id) FROM partition_user));
   `);
   console.log('Тестовый пользователь id=1 готов.');
 

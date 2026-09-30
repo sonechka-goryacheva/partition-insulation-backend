@@ -1,30 +1,30 @@
-import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { join } from 'path';
-import { readdirSync, readFileSync } from 'fs';
+import { NestFactory, Reflector } from '@nestjs/core';
+import { ClassSerializerInterceptor, ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
-
-const hbs = require('hbs');
+import { PartitionHttpExceptionFilter } from './common/partition-http-exception.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create(AppModule);
+  app.setGlobalPrefix('api');
 
-  // Каталог статических файлов: таблица стилей приложения
-  app.useStaticAssets(join(__dirname, '..', 'public'));
+  // Валидация DTO: лишние и системные поля с клиента отклоняются (400)
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      disableErrorMessages: true,
+    }),
+  );
 
-  // Каталог шаблонов и шаблонизатор Handlebars
-  app.setBaseViewsDir(join(__dirname, '..', 'views'));
-  app.setViewEngine('hbs');
+  // Автоматически скрывает поля с @Exclude() (статус конструкции, пароль)
+  app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 
-  // Частичные шаблоны регистрируем синхронно, до запуска сервера
-  const partialsDir = join(__dirname, '..', 'views', 'partials');
-  for (const partialFile of readdirSync(partialsDir)) {
-    if (!partialFile.endsWith('.hbs')) continue;
-    const partialName = partialFile.replace('.hbs', '');
-    const partialBody = readFileSync(join(partialsDir, partialFile), 'utf8');
-    hbs.registerPartial(partialName, partialBody);
-  }
+  // Ошибки: только HTTP-код, тело пустое
+  app.useGlobalFilters(new PartitionHttpExceptionFilter());
 
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  console.log(`Application is running on: http://localhost:${port}/api`);
 }
 bootstrap();

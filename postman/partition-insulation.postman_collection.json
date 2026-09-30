@@ -1,0 +1,290 @@
+{
+  "info": {
+    "name": "partition-insulation API (ЛР-3)",
+    "description": "REST API системы расчёта звукоизоляции перегородок: домен конструкций (partitions) и домен пользователей (partition-users).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api"
+    },
+    {
+      "key": "partitionSystemId",
+      "value": "1"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 Список конструкций (фильтр Rw)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/partitions?rwFrom=45&rwTo=60",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "partitions"
+          ],
+          "query": [
+            {
+              "key": "rwFrom",
+              "value": "45"
+            },
+            {
+              "key": "rwTo",
+              "value": "60"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "02 Создание черновика (фото и видео)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// id созданного черновика сохраняется для публикации, ленты, лайка и удаления",
+              "if (pm.response.code === 201) {",
+              "  pm.collectionVariables.set('partitionSystemId', pm.response.json().partitionSystemId);",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "partitionName",
+              "value": "Газобетон D600",
+              "type": "text"
+            },
+            {
+              "key": "partitionPhoto",
+              "type": "file",
+              "src": "/tmp/partition-test.png"
+            },
+            {
+              "key": "partitionVideo",
+              "type": "file",
+              "src": "/tmp/partition-test.mp4"
+            }
+          ]
+        },
+        "url": {
+          "raw": "{{baseUrl}}/partitions/draft",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "partitions",
+            "draft"
+          ]
+        }
+      }
+    },
+    {
+      "name": "03 Черновик текущего пользователя",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/partitions/draft",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "partitions",
+            "draft"
+          ]
+        }
+      }
+    },
+    {
+      "name": "04 Публикация черновика",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"partitionDescription\": \"Перегородка из газобетонных блоков D600 толщиной 200 мм с двусторонней штукатуркой\",\n  \"partitionType\": \"aeratedConcrete\",\n  \"soundIndexRw\": 52\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/partitions/draft/publish",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "partitions",
+            "draft",
+            "publish"
+          ]
+        }
+      }
+    },
+    {
+      "name": "05 Лента",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/partitions/feed",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "partitions",
+            "feed"
+          ]
+        }
+      }
+    },
+    {
+      "name": "06 Лайк конструкции",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"partitionLike\": 1\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/partitions/{{partitionSystemId}}/like",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "partitions",
+            "{{partitionSystemId}}",
+            "like"
+          ]
+        }
+      }
+    },
+    {
+      "name": "07 Удаление конструкции",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/partitions/{{partitionSystemId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "partitions",
+            "{{partitionSystemId}}"
+          ]
+        }
+      }
+    },
+    {
+      "name": "08 Регистрация пользователя",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"partitionUserLogin\": \"acoustic_petrova\",\n  \"partitionUserName\": \"Петрова Анна\",\n  \"partitionUserPassword\": \"secret123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/partition-users/register",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "partition-users",
+            "register"
+          ]
+        }
+      }
+    },
+    {
+      "name": "09 Вход (заглушка)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"partitionUserLogin\": \"acoustic_petrova\",\n  \"partitionUserPassword\": \"secret123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseUrl}}/partition-users/login",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "partition-users",
+            "login"
+          ]
+        }
+      }
+    },
+    {
+      "name": "10 Выход (заглушка)",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/partition-users/logout",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "partition-users",
+            "logout"
+          ]
+        }
+      }
+    }
+  ]
+}
