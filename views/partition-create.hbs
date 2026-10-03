@@ -78,29 +78,11 @@
 
         <p class="partitionSectionTitle">Технические параметры</p>
 
-        <div class="partitionParamRow">
-          <div class="partitionParamCell">
-            <p class="partitionFieldLabel">Тип перегородки</p>
-            <div class="partitionTypeChoice">
-              <label class="partitionTypeOption">
-                <input type="radio" name="partitionType" value="gypsum" required {{#if partition.isGypsum}}checked{{/if}}>
-                <span>ГКЛ</span>
-              </label>
-              <label class="partitionTypeOption">
-                <input type="radio" name="partitionType" value="aeratedConcrete" {{#if partition.isAeratedConcrete}}checked{{/if}}>
-                <span>ГБ</span>
-              </label>
-              <label class="partitionTypeOption">
-                <input type="radio" name="partitionType" value="brick" {{#if partition.isBrick}}checked{{/if}}>
-                <span>Кирпич</span>
-              </label>
-            </div>
-          </div>
-          <div class="partitionParamCell">
-            <p class="partitionFieldLabel">Индекс Rw, дБ</p>
-            <input class="partitionField" type="number" name="soundIndexRw" value="{{partition.soundIndexRw}}" min="0" required>
-          </div>
-        </div>
+        <p class="partitionFieldLabel">Толщина перегородки, мм</p>
+        <input class="partitionField" type="number" name="partitionThicknessMm" value="{{partition.partitionThicknessMm}}" min="1" required>
+
+        <p class="partitionFieldLabel">Индекс звукоизоляции Rw, дБ</p>
+        <input class="partitionField" type="number" name="soundIndexRw" value="{{partition.soundIndexRw}}" min="0" required>
 
         <button class="partitionPrimaryButton" type="submit">Опубликовать</button>
       </form>

@@ -5,7 +5,6 @@ import {
   PartitionsService,
   PartitionSystemView,
 } from './partitions.service';
-import { PARTITION_TYPE_SHORT, PARTITION_TYPE_TITLES } from './partition-system.model';
 
 @Controller('partitions')
 export class PartitionsController {
@@ -54,9 +53,7 @@ export class PartitionsController {
         partitionName: currentPartition.partitionName,
         partitionDescription: currentPartition.partitionDescription,
         soundIndexRw: currentPartition.soundIndexRw,
-        partitionTypeShort: currentPartition.partitionType
-          ? PARTITION_TYPE_SHORT[currentPartition.partitionType]
-          : '',
+        partitionThicknessMm: currentPartition.partitionThicknessMm,
         partitionLikesCount:
           this.partitionsService.countPartitionLikes(currentPartition),
         partitionPhotoUrl:
@@ -95,9 +92,7 @@ export class PartitionsController {
           this.partitionsService.buildPartitionPhotoUrl(draftPartition),
         partitionVideoUrl:
           this.partitionsService.buildPartitionVideoUrl(draftPartition),
-        isGypsum: draftPartition.partitionType === 'gypsum',
-        isAeratedConcrete: draftPartition.partitionType === 'aeratedConcrete',
-        isBrick: draftPartition.partitionType === 'brick',
+        partitionThicknessMm: draftPartition.partitionThicknessMm,
       },
     };
   }
@@ -115,12 +110,12 @@ export class PartitionsController {
   @Redirect('/partitions/draft')
   async publishPartitionDraft(
     @Body('partitionDescription') partitionDescription: string,
-    @Body('partitionType') partitionType: string,
+    @Body('partitionThicknessMm') partitionThicknessMm: string,
     @Body('soundIndexRw') soundIndexRw: string,
   ) {
     await this.partitionsService.publishDraftPartition({
       partitionDescription,
-      partitionType,
+      partitionThicknessMm: Number(partitionThicknessMm),
       soundIndexRw: Number(soundIndexRw),
     });
     return {};
@@ -169,9 +164,7 @@ export class PartitionsController {
         partitionSystemId: partition.partitionSystemId,
         partitionName: partition.partitionName,
         soundIndexRw: partition.soundIndexRw,
-        partitionTypeTitle: partition.partitionType
-          ? PARTITION_TYPE_TITLES[partition.partitionType]
-          : '',
+        partitionThicknessMm: partition.partitionThicknessMm,
         partitionLikesCount:
           this.partitionsService.countPartitionLikes(partition),
         partitionPhotoUrl:

@@ -28,15 +28,18 @@ export class PartitionSystemEntity {
   @Column({ type: 'varchar', length: 20 })
   partition_status: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true, default: null })
-  partition_photo_url: string | null;
+  // Адреса фото и видео обязательны: при создании черновика записываются файлы по умолчанию
+  @Column({ type: 'varchar', length: 255 })
+  partition_photo_url: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true, default: null })
-  partition_video_url: string | null;
+  @Column({ type: 'varchar', length: 255 })
+  partition_video_url: string;
 
-  @Column({ type: 'varchar', length: 30, nullable: true, default: null })
-  partition_type: string | null;
+  // Толщина перегородки, мм (заполняется при публикации)
+  @Column({ type: 'integer', nullable: true, default: null })
+  partition_thickness_mm: number | null;
 
+  // Индекс изоляции воздушного шума Rw, дБ (заполняется при публикации)
   @Column({ type: 'integer', nullable: true, default: null })
   sound_index_rw: number | null;
 

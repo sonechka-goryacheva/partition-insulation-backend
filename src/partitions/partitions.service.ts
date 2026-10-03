@@ -3,10 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Between, Repository } from 'typeorm';
 import { PartitionSystemEntity } from './entities/partition-system.entity';
 import { PartitionLikeEntity } from './entities/partition-like.entity';
-import { PartitionType, PartitionStatus } from './partition-system.model';
+import { PartitionStatus } from './partition-system.model';
 import { CURRENT_USER_ID } from '../common/current-user';
 
-// Пока реальные медиа не загружаются — дефолтные файлы лежат в public/
+// По методичке ЛР-2 файлы на сервер не загружаются: в БД записываются адреса файлов по умолчанию из public/
 export const DEFAULT_PARTITION_PHOTO_URL = '/default-partition.svg';
 export const DEFAULT_PARTITION_VIDEO_URL = '/default-partition.mp4';
 
@@ -20,16 +20,16 @@ export interface PartitionSystemView {
   partitionName: string;
   partitionDescription: string | null;
   soundIndexRw: number | null;
-  partitionType: PartitionType | null;
+  partitionThicknessMm: number | null;
   partitionStatus: PartitionStatus;
-  partitionPhotoUrl: string | null;
-  partitionVideoUrl: string | null;
+  partitionPhotoUrl: string;
+  partitionVideoUrl: string;
   partitionLikesCount: number;
 }
 
 export interface PublishPartitionInput {
   partitionDescription: string;
-  partitionType: string;
+  partitionThicknessMm: number;
   soundIndexRw: number;
 }
 
@@ -55,7 +55,7 @@ export class PartitionsService {
       partitionName: entity.partition_name,
       partitionDescription: entity.partition_description,
       soundIndexRw: entity.sound_index_rw,
-      partitionType: entity.partition_type as PartitionType | null,
+      partitionThicknessMm: entity.partition_thickness_mm,
       partitionStatus: entity.partition_status as PartitionStatus,
       partitionPhotoUrl: entity.partition_photo_url,
       partitionVideoUrl: entity.partition_video_url,
@@ -140,12 +140,13 @@ export class PartitionsService {
     }
 
     // INSERT только того, что известно на шаге «Далее»;
-    // описание, тип и Rw остаются NULL до публикации
+    // описание, толщина и Rw остаются NULL до публикации;
+    // адреса фото и видео обязательны — записываются файлы по умолчанию
     const draft = this.partitionSystemRepository.create({
       partition_name: partitionName,
       partition_status: 'draft',
-      partition_photo_url: null,
-      partition_video_url: null,
+      partition_photo_url: DEFAULT_PARTITION_PHOTO_URL,
+      partition_video_url: DEFAULT_PARTITION_VIDEO_URL,
       partition_created_at: new Date(),
       partition_formed_at: null,
       partition_creator_id: CURRENT_USER_ID,
@@ -178,7 +179,7 @@ export class PartitionsService {
     }
 
     draft.partition_description = input.partitionDescription;
-    draft.partition_type = input.partitionType;
+    draft.partition_thickness_mm = input.partitionThicknessMm;
     draft.sound_index_rw = input.soundIndexRw;
     draft.partition_status = 'published';
     draft.partition_formed_at = new Date();
@@ -192,13 +193,13 @@ export class PartitionsService {
     return partition.partitionLikesCount;
   }
 
-  // Пустой URL в БД — подставляем дефолтный файл из public/
+  // Адреса фото и видео обязательны и всегда есть в БД
   buildPartitionPhotoUrl(partition: PartitionSystemView): string {
-    return partition.partitionPhotoUrl ?? DEFAULT_PARTITION_PHOTO_URL;
+    return partition.partitionPhotoUrl;
   }
 
   buildPartitionVideoUrl(partition: PartitionSystemView): string {
-    return partition.partitionVideoUrl ?? DEFAULT_PARTITION_VIDEO_URL;
+    return partition.partitionVideoUrl;
   }
 
   // Логическое удаление — сырой SQL UPDATE, без использования ORM-методов записи
