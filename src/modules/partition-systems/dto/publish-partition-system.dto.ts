@@ -1,7 +1,5 @@
-import { IsIn, IsInt, IsNotEmpty, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString, Max, MaxLength, Min } from 'class-validator';
 import { Transform } from 'class-transformer';
-import { PARTITION_TYPES } from '../../../entities/partition-system.entity';
-import type { PartitionType } from '../../../entities/partition-system.entity';
 
 // Публикация черновика: обязательные поля по теме.
 // Статус и дата формирования вычисляются на бэкенде.
@@ -12,8 +10,11 @@ export class PublishPartitionSystemDto {
   @MaxLength(500)
   partitionDescription: string;
 
-  @IsIn(PARTITION_TYPES)
-  partitionType: PartitionType;
+  // Толщина перегородки, мм
+  @IsInt()
+  @Min(1)
+  @Max(1000)
+  partitionThicknessMm: number;
 
   // Индекс изоляции воздушного шума Rw, дБ
   @IsInt()

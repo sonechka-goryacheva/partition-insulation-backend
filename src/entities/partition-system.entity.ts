@@ -14,10 +14,6 @@ import { PartitionUserEntity } from './partition-user.entity';
 export const PARTITION_STATUSES = ['draft', 'published', 'removed'] as const;
 export type PartitionStatus = (typeof PARTITION_STATUSES)[number];
 
-// Типы конструкций по предметной области
-export const PARTITION_TYPES = ['gypsum', 'aeratedConcrete', 'brick'] as const;
-export type PartitionType = (typeof PARTITION_TYPES)[number];
-
 @Entity('partition_system')
 @Check(`"partition_status" IN ('draft', 'published', 'removed')`)
 @Index('uq_one_draft_per_user', ['partitionCreatorId'], {
@@ -39,15 +35,16 @@ export class PartitionSystemEntity {
   @Column({ name: 'partition_status', type: 'varchar', length: 20 })
   partitionStatus: PartitionStatus;
 
-  // Латинское имя файла (ключ объекта в MinIO), а не URL
-  @Column({ name: 'partition_photo_key', type: 'varchar', length: 255, nullable: true, default: null })
-  partitionPhotoKey: string | null;
+  // Латинское имя файла (ключ объекта в MinIO), а не URL; фото и видео обязательны
+  @Column({ name: 'partition_photo_key', type: 'varchar', length: 255 })
+  partitionPhotoKey: string;
 
-  @Column({ name: 'partition_video_key', type: 'varchar', length: 255, nullable: true, default: null })
-  partitionVideoKey: string | null;
+  @Column({ name: 'partition_video_key', type: 'varchar', length: 255 })
+  partitionVideoKey: string;
 
-  @Column({ name: 'partition_type', type: 'varchar', length: 30, nullable: true, default: null })
-  partitionType: PartitionType | null;
+  // Толщина перегородки, мм (заполняется при публикации)
+  @Column({ name: 'partition_thickness_mm', type: 'integer', nullable: true, default: null })
+  partitionThicknessMm: number | null;
 
   // Индекс изоляции воздушного шума Rw, дБ
   @Column({ name: 'sound_index_rw', type: 'integer', nullable: true, default: null })

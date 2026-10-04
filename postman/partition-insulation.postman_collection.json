@@ -121,7 +121,7 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"partitionDescription\": \"Перегородка из газобетонных блоков D600 толщиной 200 мм с двусторонней штукатуркой\",\n  \"partitionType\": \"aeratedConcrete\",\n  \"soundIndexRw\": 52\n}",
+          "raw": "{\n  \"partitionDescription\": \"Перегородка из газобетонных блоков D600 с двусторонней штукатуркой\",\n  \"partitionThicknessMm\": 200,\n  \"soundIndexRw\": 52\n}",
           "options": {
             "raw": {
               "language": "json"

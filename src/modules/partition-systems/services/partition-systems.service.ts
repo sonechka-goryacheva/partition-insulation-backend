@@ -149,7 +149,7 @@ export class PartitionSystemsService {
       partitionDraft.partitionSystemId,
       {
         partitionDescription: publishDto.partitionDescription,
-        partitionType: publishDto.partitionType,
+        partitionThicknessMm: publishDto.partitionThicknessMm,
         soundIndexRw: publishDto.soundIndexRw,
         partitionStatus: 'published',
         partitionFormedAt: new Date(),
@@ -227,7 +227,7 @@ export class PartitionSystemsService {
           partitionSystemId: partitionSystem.partitionSystemId,
           partitionName: partitionSystem.partitionName,
           partitionDescription: partitionSystem.partitionDescription,
-          partitionType: partitionSystem.partitionType,
+          partitionThicknessMm: partitionSystem.partitionThicknessMm,
           soundIndexRw: partitionSystem.soundIndexRw,
           partitionPhotoUrl,
           partitionVideoUrl,
