@@ -7,9 +7,10 @@ import { PartitionSystemsService } from './services/partition-systems.service';
 import { TypeORMPartitionSystemsRepository } from './repositories/typeorm-partition-systems.repository';
 import { TypeORMPartitionLikesRepository } from './repositories/typeorm-partition-likes.repository';
 import { PartitionMinioService } from './services/partition-minio.service';
+import { PartitionUsersModule } from '../partition-users/partition-users.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PartitionSystemEntity, PartitionLikeEntity])],
+  imports: [TypeOrmModule.forFeature([PartitionSystemEntity, PartitionLikeEntity]), PartitionUsersModule],
   controllers: [PartitionSystemsController],
   providers: [
     PartitionSystemsService,

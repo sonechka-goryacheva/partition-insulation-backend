@@ -1,10 +1,12 @@
 import { IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { Transform } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 
 // Создание черновика (multipart/form-data): текстовое поле формы.
 // Фото и видео приходят файлами partitionPhoto и partitionVideo.
 // Статус, создатель и дата вычисляются на бэкенде.
 export class CreatePartitionSystemDto {
+  @ApiProperty({ description: 'Название конструкции перегородки', example: 'Газобетон D600, 200 мм', maxLength: 100 })
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @IsNotEmpty()

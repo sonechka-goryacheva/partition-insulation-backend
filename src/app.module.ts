@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PartitionSystemsModule } from './modules/partition-systems/partition-systems.module';
 import { PartitionUsersModule } from './modules/partition-users/partition-users.module';
+import { PartitionSessionsModule } from './modules/partition-sessions/partition-sessions.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { PartitionUsersModule } from './modules/partition-users/partition-users.
         logging: configService.get('DB_LOGGING') === 'true',
       }),
     }),
+    PartitionSessionsModule,
     PartitionSystemsModule,
     PartitionUsersModule,
   ],

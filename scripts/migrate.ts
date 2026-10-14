@@ -1,4 +1,5 @@
 import { DataSource } from 'typeorm';
+import * as bcrypt from 'bcryptjs';
 import { PartitionUserEntity } from '../src/entities/partition-user.entity';
 import { PartitionSystemEntity } from '../src/entities/partition-system.entity';
 import { PartitionLikeEntity } from '../src/entities/partition-like.entity';
@@ -20,12 +21,17 @@ async function run() {
   console.log('Миграции выполнены успешно.');
 
   // bootstrap only, not the required Adminer fill-in —
-  // техническая заглушка, чтобы FK partition_creator_id имел на что ссылаться
-  await dataSource.query(`
-    INSERT INTO partition_user (partition_user_id, partition_user_login, partition_user_name, partition_user_password, partition_user_role)
-    VALUES (1, 'engineer', 'Тестовый инженер', 'engineer123', 'designEngineer')
+  // техническая заглушка, чтобы FK partition_creator_id имел на что ссылаться.
+  // Пароль engineer123 хранится в виде хеша bcrypt
+  const passwordHash = await bcrypt.hash('engineer123', 10);
+  await dataSource.query(
+    `
+    INSERT INTO partition_user (partition_user_id, partition_user_login, partition_user_name, partition_user_password)
+    VALUES (1, 'engineer', 'Тестовый инженер', $1)
     ON CONFLICT DO NOTHING;
-  `);
+  `,
+    [passwordHash],
+  );
   // id=1 вставлен явно, поэтому счётчик автонумерации сдвигаем вручную,
   // иначе следующая регистрация получит тот же id и упадёт на дубле ключа
   await dataSource.query(`

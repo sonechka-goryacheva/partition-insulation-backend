@@ -33,6 +33,13 @@ services:
     depends_on:
       - postgres
 
+  # Хранилище сессий (ЛР-4)
+  redis:
+    container_name: partition_redis
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
 volumes:
   minio-data:
     external: true

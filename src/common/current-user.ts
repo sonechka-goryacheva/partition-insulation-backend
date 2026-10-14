@@ -1,19 +1,20 @@
-// Текущий пользователь-создатель (designEngineer) до авторизации в ЛР-4.
-// Функция-singleton: объект создаётся один раз при первом вызове,
-// дальше все сервисы получают один и тот же неизменяемый экземпляр.
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import type { Request } from 'express';
+
+// Текущий пользователь, определённый по сессии в Redis (ЛР-4).
+// Заменил функцию-singleton getPartitionCurrentUser() с фиксированным id = 1 из ЛР-3
 export interface PartitionCurrentUser {
   readonly partitionUserId: number;
   readonly partitionUserLogin: string;
 }
 
-let partitionCurrentUser: PartitionCurrentUser | null = null;
+// Запрос, в который гард сессии записал текущего пользователя
+export type PartitionRequest = Request & { partitionCurrentUser?: PartitionCurrentUser };
 
-export function getPartitionCurrentUser(): PartitionCurrentUser {
-  if (partitionCurrentUser === null) {
-    partitionCurrentUser = Object.freeze({
-      partitionUserId: 1,
-      partitionUserLogin: 'engineer',
-    });
-  }
-  return partitionCurrentUser;
-}
+// Декоратор параметра: текущий пользователь из запроса; null — гость (сессии нет)
+export const PartitionSessionUser = createParamDecorator(
+  (_data: unknown, context: ExecutionContext): PartitionCurrentUser | null => {
+    const req = context.switchToHttp().getRequest<PartitionRequest>();
+    return req.partitionCurrentUser ?? null;
+  },
+);

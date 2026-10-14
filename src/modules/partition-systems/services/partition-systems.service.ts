@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { QueryFailedError } from 'typeorm';
-import { getPartitionCurrentUser } from '../../../common/current-user';
+import type { PartitionCurrentUser } from '../../../common/current-user';
 import { PartitionSystemEntity } from '../../../entities/partition-system.entity';
 import { TypeORMPartitionSystemsRepository } from '../repositories/typeorm-partition-systems.repository';
 import { TypeORMPartitionLikesRepository } from '../repositories/typeorm-partition-likes.repository';
@@ -29,21 +29,25 @@ export class PartitionSystemsService {
   ) {}
 
   // Список опубликованных конструкций с фильтром по диапазону Rw
-  async findPublished(filters: PartitionSystemFiltersDto): Promise<PartitionSystemResponseDto[]> {
-    const partitionCurrentUser = getPartitionCurrentUser();
-
+  // partitionCurrentUser = null — гость: признаки partitionIsLiked и partitionIsMine равны 0
+  async findPublished(
+    filters: PartitionSystemFiltersDto,
+    partitionCurrentUser: PartitionCurrentUser | null,
+  ): Promise<PartitionSystemResponseDto[]> {
     const partitionSystems = await this.partitionSystemsRepository.findPublished(
       filters.rwFrom,
       filters.rwTo,
     );
-    return this.toResponseDtos(partitionSystems, partitionCurrentUser.partitionUserId);
+    return this.toResponseDtos(partitionSystems, partitionCurrentUser?.partitionUserId ?? null);
   }
 
   // Лента: без id — первая опубликованная; с id — эта конструкция;
   // с id и next=true — следующая после неё, после последней снова первая
-  async getFeed(partitionSystemId?: number, next?: boolean): Promise<PartitionSystemResponseDto> {
-    const partitionCurrentUser = getPartitionCurrentUser();
-
+  async getFeed(
+    partitionCurrentUser: PartitionCurrentUser | null,
+    partitionSystemId?: number,
+    next?: boolean,
+  ): Promise<PartitionSystemResponseDto> {
     let partitionSystem: PartitionSystemEntity | null;
     if (partitionSystemId === undefined) {
       partitionSystem = await this.partitionSystemsRepository.findFirstPublished();
@@ -58,13 +62,11 @@ export class PartitionSystemsService {
     if (!partitionSystem) {
       throw new NotFoundException();
     }
-    return this.toResponseDto(partitionSystem, partitionCurrentUser.partitionUserId);
+    return this.toResponseDto(partitionSystem, partitionCurrentUser?.partitionUserId ?? null);
   }
 
   // Черновик текущего пользователя (не более одного), id не указывается
-  async getDraft(): Promise<PartitionSystemResponseDto> {
-    const partitionCurrentUser = getPartitionCurrentUser();
-
+  async getDraft(partitionCurrentUser: PartitionCurrentUser): Promise<PartitionSystemResponseDto> {
     const partitionDraft = await this.partitionSystemsRepository.findDraftByCreator(
       partitionCurrentUser.partitionUserId,
     );
@@ -79,9 +81,8 @@ export class PartitionSystemsService {
   async createDraft(
     createDto: CreatePartitionSystemDto,
     files: PartitionMediaFiles,
+    partitionCurrentUser: PartitionCurrentUser,
   ): Promise<PartitionSystemResponseDto> {
-    const partitionCurrentUser = getPartitionCurrentUser();
-
     // Не более одного черновика на пользователя
     const existingDraft = await this.partitionSystemsRepository.findDraftByCreator(
       partitionCurrentUser.partitionUserId,
@@ -135,9 +136,10 @@ export class PartitionSystemsService {
 
   // Публикация: только черновик текущего пользователя, draft → published.
   // Обратного перехода в черновик нет
-  async publishDraft(publishDto: PublishPartitionSystemDto): Promise<PartitionSystemResponseDto> {
-    const partitionCurrentUser = getPartitionCurrentUser();
-
+  async publishDraft(
+    publishDto: PublishPartitionSystemDto,
+    partitionCurrentUser: PartitionCurrentUser,
+  ): Promise<PartitionSystemResponseDto> {
     const partitionDraft = await this.partitionSystemsRepository.findDraftByCreator(
       partitionCurrentUser.partitionUserId,
     );
@@ -159,9 +161,10 @@ export class PartitionSystemsService {
   }
 
   // Мягкое удаление: только своя неудалённая конструкция, статус → removed
-  async removePartitionSystem(partitionSystemId: number): Promise<void> {
-    const partitionCurrentUser = getPartitionCurrentUser();
-
+  async removePartitionSystem(
+    partitionSystemId: number,
+    partitionCurrentUser: PartitionCurrentUser,
+  ): Promise<void> {
     const partitionSystem = await this.partitionSystemsRepository.findActiveByIdAndCreator(
       partitionSystemId,
       partitionCurrentUser.partitionUserId,
@@ -178,9 +181,8 @@ export class PartitionSystemsService {
   async setPartitionLike(
     partitionSystemId: number,
     likeDto: PartitionLikeDto,
+    partitionCurrentUser: PartitionCurrentUser,
   ): Promise<PartitionSystemResponseDto> {
-    const partitionCurrentUser = getPartitionCurrentUser();
-
     const partitionSystem = await this.partitionSystemsRepository.findPublishedById(partitionSystemId);
     if (!partitionSystem) {
       throw new NotFoundException();
@@ -197,7 +199,7 @@ export class PartitionSystemsService {
 
   private async toResponseDto(
     partitionSystem: PartitionSystemEntity,
-    partitionUserId: number,
+    partitionUserId: number | null,
   ): Promise<PartitionSystemResponseDto> {
     const [partitionSystemDto] = await this.toResponseDtos([partitionSystem], partitionUserId);
     return partitionSystemDto;
@@ -207,13 +209,16 @@ export class PartitionSystemsService {
   // подписанные ссылки MinIO вместо ключей, признаки 0/1 для текущего пользователя
   private async toResponseDtos(
     partitionSystems: PartitionSystemEntity[],
-    partitionUserId: number,
+    partitionUserId: number | null,
   ): Promise<PartitionSystemResponseDto[]> {
     const partitionSystemIds = partitionSystems.map((partitionSystem) => partitionSystem.partitionSystemId);
 
     const [partitionLikesCounts, partitionLikedIds] = await Promise.all([
       this.partitionLikesRepository.countBySystemIds(partitionSystemIds),
-      this.partitionLikesRepository.findLikedSystemIds(partitionUserId, partitionSystemIds),
+      // У гостя лайков нет
+      partitionUserId === null
+        ? Promise.resolve(new Set<number>())
+        : this.partitionLikesRepository.findLikedSystemIds(partitionUserId, partitionSystemIds),
     ]);
 
     return Promise.all(
