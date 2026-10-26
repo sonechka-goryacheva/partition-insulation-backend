@@ -26,6 +26,7 @@ export class PartitionSessionService implements OnModuleDestroy {
     this.redis = new Redis({
       host: this.configService.get<string>('REDIS_HOST'),
       port: Number(this.configService.get<string>('REDIS_PORT')),
+      password: this.configService.get<string>('REDIS_PASSWORD'),
     });
     this.redis.on('error', (error) => {
       this.logger.error(`Ошибка Redis: ${error.message}`);

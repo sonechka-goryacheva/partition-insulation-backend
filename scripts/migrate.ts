@@ -3,6 +3,8 @@ import * as bcrypt from 'bcryptjs';
 import { PartitionUserEntity } from '../src/entities/partition-user.entity';
 import { PartitionSystemEntity } from '../src/entities/partition-system.entity';
 import { PartitionLikeEntity } from '../src/entities/partition-like.entity';
+import { PartitionAttributeEntity } from '../src/entities/partition-attribute.entity';
+import { PartitionAttributeValueEntity } from '../src/entities/partition-attribute-value.entity';
 
 const dataSource = new DataSource({
   type: 'postgres',
@@ -11,7 +13,13 @@ const dataSource = new DataSource({
   username: process.env.DB_USERNAME,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_DATABASE,
-  entities: [PartitionUserEntity, PartitionSystemEntity, PartitionLikeEntity],
+  entities: [
+    PartitionUserEntity,
+    PartitionSystemEntity,
+    PartitionLikeEntity,
+    PartitionAttributeEntity,
+    PartitionAttributeValueEntity,
+  ],
   synchronize: true,
 });
 
@@ -39,6 +47,18 @@ async function run() {
                   (SELECT MAX(partition_user_id) FROM partition_user));
   `);
   console.log('Тестовый пользователь id=1 готов.');
+
+  // Справочник атрибутов (дополнительные характеристики конструкций)
+  await dataSource.query(`
+    INSERT INTO partition_attribute (partition_attribute_name, partition_attribute_unit) VALUES
+      ('Поверхностная масса', 'кг/м²'),
+      ('Предел огнестойкости', NULL),
+      ('Материал обшивки', NULL),
+      ('Заполнение', NULL),
+      ('Тип каркаса', NULL)
+    ON CONFLICT (partition_attribute_name) DO NOTHING;
+  `);
+  console.log('Справочник атрибутов готов.');
 
   await dataSource.destroy();
   process.exit(0);

@@ -1,6 +1,7 @@
-import { IsInt, IsNotEmpty, IsString, Max, MaxLength, Min } from 'class-validator';
-import { Transform } from 'class-transformer';
-import { ApiProperty } from '@nestjs/swagger';
+import { ArrayMaxSize, IsArray, IsInt, IsNotEmpty, IsOptional, IsString, Max, MaxLength, Min, ValidateNested } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { PartitionAttributeValueDto } from './partition-attribute-value.dto';
 
 // Публикация черновика: обязательные поля по теме.
 // Статус и дата формирования вычисляются на бэкенде.
@@ -25,4 +26,13 @@ export class PublishPartitionSystemDto {
   @Min(0)
   @Max(100)
   soundIndexRw: number;
+
+  // Дополнительные характеристики: заменяют прежний набор атрибутов черновика
+  @ApiPropertyOptional({ type: [PartitionAttributeValueDto], description: 'Значения атрибутов из справочника GET /api/partitions/attributes' })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(20)
+  @ValidateNested({ each: true })
+  @Type(() => PartitionAttributeValueDto)
+  partitionAttributes?: PartitionAttributeValueDto[];
 }

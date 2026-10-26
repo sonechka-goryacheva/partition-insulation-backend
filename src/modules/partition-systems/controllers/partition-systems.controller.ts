@@ -37,6 +37,7 @@ import { PartitionSystemResponseDto } from '../dto/partition-system-response.dto
 import { CreatePartitionSystemDto } from '../dto/create-partition-system.dto';
 import { PublishPartitionSystemDto } from '../dto/publish-partition-system.dto';
 import { PartitionLikeDto } from '../dto/partition-like.dto';
+import { PartitionAttributeResponseDto } from '../dto/partition-attribute-response.dto';
 
 // Чтение (список, лента) доступно гостю — PartitionOptionalSessionGuard.
 // Методы создателя требуют сессию — PartitionSessionGuard, без неё 401
@@ -56,6 +57,14 @@ export class PartitionSystemsController {
     @PartitionSessionUser() partitionCurrentUser: PartitionCurrentUser | null,
   ): Promise<PartitionSystemResponseDto[]> {
     return this.partitionSystemsService.findPublished(filters, partitionCurrentUser);
+  }
+
+  // GET /api/partitions/attributes — справочник атрибутов (дополнительных характеристик)
+  @Get('attributes')
+  @ApiOperation({ summary: 'Справочник атрибутов конструкции для формы публикации (доступно гостю)' })
+  @ApiResponse({ status: 200, description: 'Список атрибутов', type: [PartitionAttributeResponseDto] })
+  async getPartitionAttributes(): Promise<PartitionAttributeResponseDto[]> {
+    return this.partitionSystemsService.findAttributes();
   }
 
   // GET /api/partitions/feed — первая конструкция ленты
@@ -147,11 +156,11 @@ export class PartitionSystemsController {
   @Put('draft/publish')
   @UseGuards(PartitionSessionGuard)
   @ApiCookieAuth()
-  @ApiOperation({ summary: 'Публикация черновика: описание, толщина и Rw (только создатель)' })
+  @ApiOperation({ summary: 'Публикация черновика: описание, толщина, Rw и атрибуты (только создатель)' })
   @ApiResponse({ status: 200, description: 'Конструкция опубликована', type: PartitionSystemResponseDto })
-  @ApiResponse({ status: 400, description: 'Неверный формат или лишние поля' })
+  @ApiResponse({ status: 400, description: 'Неверный формат, лишние поля или повтор атрибута' })
   @ApiResponse({ status: 401, description: 'Гость: нет сессии' })
-  @ApiResponse({ status: 404, description: 'Черновика нет' })
+  @ApiResponse({ status: 404, description: 'Черновика нет или атрибута нет в справочнике' })
   async publishPartitionDraft(
     @Body() publishDto: PublishPartitionSystemDto,
     @PartitionSessionUser() partitionCurrentUser: PartitionCurrentUser,

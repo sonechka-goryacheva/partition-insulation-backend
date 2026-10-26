@@ -37,11 +37,21 @@ services:
   redis:
     container_name: partition_redis
     image: redis:7-alpine
+    restart: always
     ports:
       - "6379:6379"
+    # сохранение на диск раз в 20 с при изменениях, пароль из .env
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    environment:
+      # redis-cli внутри контейнера входит с паролем автоматически
+      REDISCLI_AUTH: ${REDIS_PASSWORD}
+    volumes:
+      - redis-data:/data
 
 volumes:
   minio-data:
     external: true
     name: partition-lab_minio-data
   postgres-data:
+  redis-data:
+    driver: local

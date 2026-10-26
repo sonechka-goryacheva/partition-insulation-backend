@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { PartitionSystemAttributeDto } from './partition-attribute-response.dto';
 
 // Единый ответ для списка, ленты и черновика: набор полей всегда одинаковый,
 // пустые значения приходят как null. Статус и создатель клиенту не передаются.
@@ -32,6 +33,9 @@ export class PartitionSystemResponseDto {
 
   @ApiProperty({ enum: [0, 1], description: '1 — конструкция текущего пользователя (у гостя всегда 0)', example: 1 })
   partitionIsMine: 0 | 1;
+
+  @ApiProperty({ type: [PartitionSystemAttributeDto], description: 'Дополнительные характеристики; [] — нет атрибутов' })
+  partitionAttributes: PartitionSystemAttributeDto[];
 
   constructor(fields: PartitionSystemResponseDto) {
     Object.assign(this, fields);

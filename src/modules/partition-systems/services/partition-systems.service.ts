@@ -4,6 +4,8 @@ import type { PartitionCurrentUser } from '../../../common/current-user';
 import { PartitionSystemEntity } from '../../../entities/partition-system.entity';
 import { TypeORMPartitionSystemsRepository } from '../repositories/typeorm-partition-systems.repository';
 import { TypeORMPartitionLikesRepository } from '../repositories/typeorm-partition-likes.repository';
+import { TypeORMPartitionAttributesRepository } from '../repositories/typeorm-partition-attributes.repository';
+import { PartitionAttributeResponseDto, PartitionSystemAttributeDto } from '../dto/partition-attribute-response.dto';
 import { PartitionMinioService } from './partition-minio.service';
 import { PartitionSystemFiltersDto } from '../dto/partition-system-filters.dto';
 import { PartitionSystemResponseDto } from '../dto/partition-system-response.dto';
@@ -25,8 +27,19 @@ export class PartitionSystemsService {
   constructor(
     private readonly partitionSystemsRepository: TypeORMPartitionSystemsRepository,
     private readonly partitionLikesRepository: TypeORMPartitionLikesRepository,
+    private readonly partitionAttributesRepository: TypeORMPartitionAttributesRepository,
     private readonly partitionMinioService: PartitionMinioService,
   ) {}
+
+  // Справочник атрибутов для формы публикации
+  async findAttributes(): Promise<PartitionAttributeResponseDto[]> {
+    const partitionAttributes = await this.partitionAttributesRepository.findAll();
+    return partitionAttributes.map((partitionAttribute) => new PartitionAttributeResponseDto({
+      partitionAttributeId: partitionAttribute.partitionAttributeId,
+      partitionAttributeName: partitionAttribute.partitionAttributeName,
+      partitionAttributeUnit: partitionAttribute.partitionAttributeUnit,
+    }));
+  }
 
   // Список опубликованных конструкций с фильтром по диапазону Rw
   // partitionCurrentUser = null — гость: признаки partitionIsLiked и partitionIsMine равны 0
@@ -147,6 +160,25 @@ export class PartitionSystemsService {
       throw new NotFoundException();
     }
 
+    // Атрибуты: без повторов (400) и только из справочника (404)
+    if (publishDto.partitionAttributes) {
+      const partitionAttributeIds = publishDto.partitionAttributes.map((attribute) => attribute.partitionAttributeId);
+      if (new Set(partitionAttributeIds).size !== partitionAttributeIds.length) {
+        throw new BadRequestException();
+      }
+      const foundCount = await this.partitionAttributesRepository.countByIds(partitionAttributeIds);
+      if (foundCount !== partitionAttributeIds.length) {
+        throw new NotFoundException();
+      }
+      await this.partitionAttributesRepository.replaceValues(
+        partitionDraft.partitionSystemId,
+        publishDto.partitionAttributes.map((attribute) => ({
+          partitionAttributeId: attribute.partitionAttributeId,
+          partitionAttributeValue: attribute.partitionAttributeValue,
+        })),
+      );
+    }
+
     const partitionPublished = await this.partitionSystemsRepository.update(
       partitionDraft.partitionSystemId,
       {
@@ -213,12 +245,13 @@ export class PartitionSystemsService {
   ): Promise<PartitionSystemResponseDto[]> {
     const partitionSystemIds = partitionSystems.map((partitionSystem) => partitionSystem.partitionSystemId);
 
-    const [partitionLikesCounts, partitionLikedIds] = await Promise.all([
+    const [partitionLikesCounts, partitionLikedIds, partitionAttributeValues] = await Promise.all([
       this.partitionLikesRepository.countBySystemIds(partitionSystemIds),
       // У гостя лайков нет
       partitionUserId === null
         ? Promise.resolve(new Set<number>())
         : this.partitionLikesRepository.findLikedSystemIds(partitionUserId, partitionSystemIds),
+      this.partitionAttributesRepository.findValuesBySystemIds(partitionSystemIds),
     ]);
 
     return Promise.all(
@@ -239,6 +272,14 @@ export class PartitionSystemsService {
           partitionLikesCount: partitionLikesCounts.get(partitionSystem.partitionSystemId) ?? 0,
           partitionIsLiked: partitionLikedIds.has(partitionSystem.partitionSystemId) ? 1 : 0,
           partitionIsMine: partitionSystem.partitionCreatorId === partitionUserId ? 1 : 0,
+          partitionAttributes: (partitionAttributeValues.get(partitionSystem.partitionSystemId) ?? []).map(
+            (value) => new PartitionSystemAttributeDto({
+              partitionAttributeId: value.partitionAttributeId,
+              partitionAttributeName: value.partitionAttribute.partitionAttributeName,
+              partitionAttributeUnit: value.partitionAttribute.partitionAttributeUnit,
+              partitionAttributeValue: value.partitionAttributeValue,
+            }),
+          ),
         });
       }),
     );
